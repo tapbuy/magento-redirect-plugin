@@ -1,0 +1,11 @@
+<?php
+/** @var \Tapbuy\RedirectTracking\Block\Checkout\Tracking $block */
+if ($block->isTapbuyEnabled()): ?>
+<script type="text/javascript">
+    require(['jquery', 'Tapbuy_RedirectTracking/js/tapbuy'], function($, tapbuy) {
+        $(document).ready(function() {
+            tapbuy.initialize('<?= $block->getABTestId() ?>');
+        });
+    });
+</script>
+<?php endif; ?>

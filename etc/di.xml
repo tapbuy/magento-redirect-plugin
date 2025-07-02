@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!-- di.xml -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Plugins -->
+    <type name="Magento\Checkout\Controller\Index\Index">
+        <plugin name="tapbuy_checkout_redirect" type="Tapbuy\RedirectTracking\Plugin\CheckoutRedirectPlugin" sortOrder="10" />
+    </type>
+    
+    <!-- Preferences -->
+    <preference for="Tapbuy\RedirectTracking\Api\TapbuyServiceInterface" type="Tapbuy\RedirectTracking\Model\Service" />
+    
+    <!-- Virtual Types -->
+    <virtualType name="Tapbuy\RedirectTracking\Logger\Handler" type="Magento\Framework\Logger\Handler\Base">
+        <arguments>
+            <argument name="fileName" xsi:type="string">/var/log/tapbuy.log</argument>
+        </arguments>
+    </virtualType>
+    
+    <virtualType name="Tapbuy\RedirectTracking\Logger\Logger" type="Magento\Framework\Logger\Monolog">
+        <arguments>
+            <argument name="name" xsi:type="string">tapbuy</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">Tapbuy\RedirectTracking\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    
+    <!-- Service Interface -->
+    <type name="Tapbuy\RedirectTracking\Model\Service">
+        <arguments>
+            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\Logger</argument>
+        </arguments>
+    </type>
+</config>
