@@ -11,7 +11,6 @@ namespace Tapbuy\RedirectTracking\Controller\Redirect;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\Result\RedirectFactory;
-use Magento\Checkout\Model\Session as CheckoutSession;
 use Psr\Log\LoggerInterface;
 use Tapbuy\RedirectTracking\Helper\Data;
 use Tapbuy\RedirectTracking\Model\Config;
@@ -23,11 +22,6 @@ class Index extends Action
      * @var RedirectFactory
      */
     protected $resultRedirectFactory;
-
-    /**
-     * @var CheckoutSession
-     */
-    protected $checkoutSession;
 
     /**
      * @var Config
@@ -54,7 +48,6 @@ class Index extends Action
      *
      * @param Context $context
      * @param RedirectFactory $resultRedirectFactory
-     * @param CheckoutSession $checkoutSession
      * @param Config $config
      * @param Service $service
      * @param Data $helper
@@ -63,14 +56,12 @@ class Index extends Action
     public function __construct(
         Context $context,
         RedirectFactory $resultRedirectFactory,
-        CheckoutSession $checkoutSession,
         Config $config,
         Service $service,
         Data $helper,
         LoggerInterface $logger
     ) {
         $this->resultRedirectFactory = $resultRedirectFactory;
-        $this->checkoutSession = $checkoutSession;
         $this->config = $config;
         $this->service = $service;
         $this->helper = $helper;

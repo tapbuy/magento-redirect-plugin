@@ -181,14 +181,14 @@ class Service
      *
      * @return array|bool
      */
-    public function triggerABTest()
+    public function triggerABTest($quote, $forceRedirect = null)
     {
         if (!$this->config->isEnabled() || $this->helper->isTapbuyApiRequest()) {
             return ['redirect' => false];
         }
 
         // Check if the cart has at least one product
-        if (!$this->helper->hasProductsInCart()) {
+        if (!$this->helper->hasProductsInCart($quote)) {
             $this->helper->removeABTestIdCookie();
             return ['redirect' => false];
         }
@@ -199,8 +199,9 @@ class Service
                 'tracking' => $this->helper->getTrackingCookies(),
                 'variationId' => $this->helper->getABTestId(),
                 'cookies' => $this->helper->getStoreCookies(),
-                'key' => $this->helper->getTapbuyKey(),
-                'locale' => $this->helper->getLocale()
+                'key' => $this->helper->getTapbuyKey($quote),
+                'locale' => $this->helper->getLocale(),
+                'forceRedirect' => $forceRedirect,
             ];
 
             $result = $this->sendRequest('/ab-test/variation', $payload);

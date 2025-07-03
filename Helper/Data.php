@@ -9,7 +9,6 @@
 
 namespace Tapbuy\RedirectTracking\Helper;
 
-use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Framework\App\Helper\AbstractHelper;
@@ -40,11 +39,6 @@ class Data extends AbstractHelper
      * @var Cookie
      */
     private $cookie;
-
-    /**
-     * @var CheckoutSession
-     */
-    private $checkoutSession;
 
     /**
      * @var CustomerSession
@@ -88,7 +82,6 @@ class Data extends AbstractHelper
      * @param Config $config
      * @param CookieManagerInterface $cookieManager
      * @param Cookie $cookie
-     * @param CheckoutSession $checkoutSession
      * @param CustomerSession $customerSession
      * @param EncryptorInterface $encryptor
      * @param Json $json
@@ -102,7 +95,6 @@ class Data extends AbstractHelper
         Config $config,
         CookieManagerInterface $cookieManager,
         Cookie $cookie,
-        CheckoutSession $checkoutSession,
         CustomerSession $customerSession,
         EncryptorInterface $encryptor,
         Json $json,
@@ -114,7 +106,6 @@ class Data extends AbstractHelper
         $this->config = $config;
         $this->cookieManager = $cookieManager;
         $this->cookie = $cookie;
-        $this->checkoutSession = $checkoutSession;
         $this->customerSession = $customerSession;
         $this->encryptor = $encryptor;
         $this->json = $json;
@@ -172,9 +163,8 @@ class Data extends AbstractHelper
      *
      * @return bool
      */
-    public function hasProductsInCart()
+    public function hasProductsInCart($quote)
     {
-        $quote = $this->checkoutSession->getQuote();
         return $quote && $quote->getId() && count($quote->getAllVisibleItems()) > 0;
     }
 
@@ -264,28 +254,24 @@ class Data extends AbstractHelper
      *
      * @return string
      */
-    public function getTapbuyKey()
+    public function getTapbuyKey($quote)
     {
         $data = [];
 
-        // Get customer data if logged in
-        if ($this->customerSession->isLoggedIn()) {
-            $customer = $this->customerSession->getCustomer();
-            $data['customer_id'] = $customer->getId();
-            $data['email'] = $customer->getEmail();
+        // Get Authorization header from request
+        $authorizationHeader = $this->request->getHeader('Authorization');
+        if ($authorizationHeader) {
+            // Extract Bearer token
+            if (preg_match('/Bearer\s(\S+)/', $authorizationHeader, $matches)) {
+                $data['session_id'] = $matches[1];
+            }
         }
 
         // Get cart data if available
-        $quote = $this->checkoutSession->getQuote();
         if ($quote && $quote->getId()) {
-            if ($quote->getCustomerId()) {
-                // Logged-in customer cart
-                $data['cart_id'] = $quote->getId();
-            } else {
-                // Guest cart, retrieve masked ID
-                $quoteIdMask = $this->quoteIdMaskFactory->create()->load($quote->getId(), 'quote_id');
-                $data['cart_id'] = $quoteIdMask->getMaskedId();
-            }
+            // Guest cart, retrieve masked ID
+            $quoteIdMask = $this->quoteIdMaskFactory->create()->load($quote->getId(), 'quote_id');
+            $data['cart_id'] = $quoteIdMask->getMaskedId();
         }
 
         // Convert to JSON and encrypt

@@ -31,4 +31,8 @@
             <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\Logger</argument>
         </arguments>
     </type>
+
+    <!-- Resolvers -->
+    <type name="Tapbuy\RedirectTracking\Model\Resolver\Redirect">
+    </type>
 </config>
