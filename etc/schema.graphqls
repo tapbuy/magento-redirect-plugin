@@ -1,0 +1,14 @@
+type TapbuyRedirectResult {
+    redirect: Boolean!
+    redirect_url: String
+    message: String
+}
+
+input TapbuyRedirectInput {
+    cart_id: String!
+    force_redirect: String
+}
+
+extend type Query {
+    tapbuyRedirect(input: TapbuyRedirectInput!): TapbuyRedirectResult @resolver(class: "Tapbuy\\RedirectTracking\\Model\\Resolver\\Redirect")
+}
