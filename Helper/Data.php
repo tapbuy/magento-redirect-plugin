@@ -9,10 +9,10 @@
 
 namespace Tapbuy\RedirectTracking\Helper;
 
-use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
+use Magento\Framework\App\State;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\HTTP\Header;
@@ -39,11 +39,6 @@ class Data extends AbstractHelper
      * @var Cookie
      */
     private $cookie;
-
-    /**
-     * @var CustomerSession
-     */
-    private $customerSession;
 
     /**
      * @var RequestInterface
@@ -76,43 +71,48 @@ class Data extends AbstractHelper
     private $quoteIdMaskFactory;
 
     /**
+     * @var State
+     */
+    private $appState;
+
+    /**
      * Data constructor.
      *
      * @param Context $context
      * @param Config $config
      * @param CookieManagerInterface $cookieManager
      * @param Cookie $cookie
-     * @param CustomerSession $customerSession
      * @param EncryptorInterface $encryptor
      * @param Json $json
      * @param Resolver $localeResolver
      * @param Header $httpHeader
      * @param RequestInterface $request
      * @param QuoteIdMaskFactory $quoteIdMaskFactory
+     * @param State $appState
      */
     public function __construct(
         Context $context,
         Config $config,
         CookieManagerInterface $cookieManager,
         Cookie $cookie,
-        CustomerSession $customerSession,
         EncryptorInterface $encryptor,
         Json $json,
         Resolver $localeResolver,
         Header $httpHeader,
         RequestInterface $request,
-        QuoteIdMaskFactory $quoteIdMaskFactory
+        QuoteIdMaskFactory $quoteIdMaskFactory,
+        State $appState
     ) {
         $this->config = $config;
         $this->cookieManager = $cookieManager;
         $this->cookie = $cookie;
-        $this->customerSession = $customerSession;
         $this->encryptor = $encryptor;
         $this->json = $json;
         $this->localeResolver = $localeResolver;
         $this->httpHeader = $httpHeader;
         $this->request = $request;
         $this->quoteIdMaskFactory = $quoteIdMaskFactory;
+        $this->appState = $appState;
         parent::__construct($context);
     }
 
@@ -289,5 +289,20 @@ class Data extends AbstractHelper
         $encryptedData = $aes->encrypt($jsonData);
 
         return base64_encode($encryptedData);
+    }
+
+    /**
+     * Determines if the application is running in development mode.
+     *
+     * @return bool Returns true if the application is in development mode, false otherwise.
+     */
+    public function isDevelopmentMode(): bool
+    {
+        try {
+            return $this->appState->getMode() === State::MODE_DEVELOPER;
+        } catch (\Exception $e) {
+            // If we can't determine mode, assume production for security
+            return false;
+        }
     }
 }

@@ -101,16 +101,10 @@ class Service
             return false;
         }
 
-        $url = rtrim($apiUrl, '/') . '/' . ltrim($endpoint, '/');
+        $url = trim($apiUrl, '/') . '/' . trim($endpoint, '/');
 
         try {
-            // Set headers
-            $this->curl->addHeader('Content-Type', 'application/json');
-            $this->curl->addHeader('Origin', $this->urlBuilder->getBaseUrl());
-            $this->curl->addHeader('User-Agent', $this->request->getHeader('User-Agent'));
-            $this->curl->addHeader('X-Locale', $this->helper->getLocale());
-            $this->curl->setOption(CURLOPT_SSL_VERIFYHOST, false);
-            $this->curl->setOption(CURLOPT_SSL_VERIFYPEER, false);
+            $this->configureCurl();
             // Send request
             $this->curl->post($url, $this->json->serialize($payload));
 
@@ -220,5 +214,31 @@ class Service
             $this->helper->removeABTestIdCookie();
             return ['redirect' => false];
         }
+    }
+
+    /**
+     * Configures the cURL settings for HTTP requests.
+     *
+     * This method sets up the necessary cURL options to ensure proper communication
+     * with external services. It does not return any value.
+     *
+     * @return void
+     */
+    private function configureCurl(): void
+    {
+        $this->curl->addHeader('Content-Type', 'application/json');
+        $this->curl->addHeader('Origin', $this->urlBuilder->getBaseUrl());
+        $this->curl->addHeader('User-Agent', $this->request->getHeader('User-Agent'));
+        $this->curl->addHeader('X-Locale', $this->helper->getLocale());
+        
+        // Only disable SSL verification in development
+        if ($this->helper->isDevelopmentMode()) {
+            $this->curl->setOption(CURLOPT_SSL_VERIFYHOST, false);
+            $this->curl->setOption(CURLOPT_SSL_VERIFYPEER, false);
+        }
+        
+        // Set timeout
+        $this->curl->setOption(CURLOPT_TIMEOUT, 30);
+        $this->curl->setOption(CURLOPT_CONNECTTIMEOUT, 10);
     }
 }
