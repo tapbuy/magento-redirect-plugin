@@ -1,11 +1,6 @@
 <?xml version="1.0"?>
 <!-- di.xml -->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <!-- Plugins -->
-    <type name="Magento\Checkout\Controller\Index\Index">
-        <plugin name="tapbuy_checkout_redirect" type="Tapbuy\RedirectTracking\Plugin\CheckoutRedirectPlugin" sortOrder="10" />
-    </type>
-    
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">    
     <!-- Preferences -->
     <preference for="Tapbuy\RedirectTracking\Api\TapbuyServiceInterface" type="Tapbuy\RedirectTracking\Model\Service" />
     

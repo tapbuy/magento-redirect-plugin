@@ -1,9 +1,6 @@
 <?xml version="1.0"?>
 <!-- events.xml -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
-    <event name="controller_action_predispatch_checkout_index_index">
-        <observer name="tapbuy_checkout_init" instance="Tapbuy\RedirectTracking\Observer\CheckoutInit" />
-    </event>
     <event name="sales_order_save_after">
         <observer name="tapbuy_order_save_after" instance="Tapbuy\RedirectTracking\Observer\OrderSaveAfter" />
     </event>
