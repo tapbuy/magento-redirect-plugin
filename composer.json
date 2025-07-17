@@ -11,8 +11,7 @@
         "magento/framework": "103.0.*",
         "magento/module-checkout": "100.4.*",
         "magento/module-sales": "103.0.*",
-        "phpseclib/phpseclib": "^3.0",
-        "magento/module-graphql": "*"
+        "phpseclib/phpseclib": "^3.0"
     },
     "autoload": {
         "files": [
