@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Calque_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:serif="http://www.serif.com/" version="1.1" viewBox="0 0 1080.35 1080">
+  <!-- Generator: Adobe Illustrator 29.6.1, SVG Export Plug-In . SVG Version: 2.1.1 Build 9)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: url(#Dégradé_sans_nom);
+      }
+
+      .st0, .st1, .st2 {
+        fill-rule: evenodd;
+      }
+
+      .st1 {
+        fill: url(#Dégradé_sans_nom_3);
+      }
+
+      .st2 {
+        fill: url(#Dégradé_sans_nom_2);
+      }
+
+      .st3 {
+        fill: #101e36;
+      }
+    </style>
+    <linearGradient id="Dégradé_sans_nom" data-name="Dégradé sans nom" x1="-419.83" y1="1079.98" x2="-418.83" y2="1079.98" gradientTransform="translate(277226.11 122751.67) rotate(-44.98) scale(261.24 -261.24)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0065ea"/>
+      <stop offset="1" stop-color="#00a1ec"/>
+    </linearGradient>
+    <linearGradient id="Dégradé_sans_nom_2" data-name="Dégradé sans nom 2" x1="-419.83" y1="1079.91" x2="-418.83" y2="1079.91" gradientTransform="translate(-53940.39 124315.31) rotate(44.96) scale(116.75 -116.75)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00a1ec"/>
+      <stop offset="1" stop-color="#00c6ee"/>
+    </linearGradient>
+    <linearGradient id="Dégradé_sans_nom_3" data-name="Dégradé sans nom 3" x1="-419.83" y1="1080.02" x2="-418.83" y2="1080.02" gradientTransform="translate(370745.99 163861.73) rotate(-44.96) scale(349.11 -349.11)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00c6ee"/>
+      <stop offset="1" stop-color="#00fff0"/>
+    </linearGradient>
+  </defs>
+  <g id="favicon">
+    <rect class="st3" y="0" width="1080" height="1080" rx="101.43" ry="101.43"/>
+    <g>
+      <path class="st0" d="M403.98,385.43c38.35-36.5,99.05-35.04,135.52,3.32,36.47,38.35,35,99.13-3.3,135.63l-257.02,244.85c-38.3,36.49-99.05,34.97-135.52-3.32-36.47-38.35-35-99.13,3.35-135.63l256.97-244.85Z"/>
+      <path class="st2" d="M680.1,558.29c33.77,40.81,28.04,101.33-12.69,135.1-40.78,33.77-101.25,28.07-134.97-12.74l-136.2-164.56c-33.72-40.81-28.04-101.32,12.69-135.03,40.78-33.77,101.25-28.13,134.97,12.68l136.2,164.56Z"/>
+      <path class="st1" d="M802.11,309.53c38.99-35.77,99.69-33.11,135.47,5.9,35.73,39.02,33.12,99.73-5.86,135.5l-260.64,239.28c-38.99,35.77-99.69,33.18-135.43-5.84-35.78-39.02-33.17-99.8,5.82-135.57l260.64-239.28Z"/>
+    </g>
+  </g>
+</svg>

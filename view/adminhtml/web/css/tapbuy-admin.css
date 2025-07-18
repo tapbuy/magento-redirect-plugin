@@ -1,0 +1,34 @@
+/**
+ * Tapbuy Admin Styles
+ */
+
+/* Add logo to Tapbuy tab */
+.tapbuy-tab .admin__page-nav-title:before {
+    content: "";
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-image: url('../images/tapbuy.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+#tapbuy_general-head:before,
+#tapbuy .section-header h4:before {
+    content: "";
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-image: url('../images/tapbuy.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-right: 8px;
+    vertical-align: middle;
+    position: relative;
+    top: -3px;
+    left: 0px;
+}
