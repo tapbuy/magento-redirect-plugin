@@ -64,7 +64,7 @@ class Handler extends Base
             'level' => (int)$record['level'],
             'level_name' => (string)$record['level_name'],
             'params' => isset($record['context']['params']) ? (array)$record['context']['params'] : (array)$record['context'],
-            'sentry' => $record['context']['sentry'] ?? false
+            'sentry' => ($record['context'] ?? [])['sentry'] ?? false
         ];
 
         try {
