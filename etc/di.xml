@@ -5,17 +5,11 @@
     <preference for="Tapbuy\RedirectTracking\Api\TapbuyServiceInterface" type="Tapbuy\RedirectTracking\Model\Service" />
     
     <!-- Virtual Types -->
-    <virtualType name="Tapbuy\RedirectTracking\Logger\Handler" type="Magento\Framework\Logger\Handler\Base">
-        <arguments>
-            <argument name="fileName" xsi:type="string">/var/log/tapbuy.log</argument>
-        </arguments>
-    </virtualType>
-    
     <virtualType name="Tapbuy\RedirectTracking\Logger\Logger" type="Magento\Framework\Logger\Monolog">
         <arguments>
             <argument name="name" xsi:type="string">tapbuy</argument>
             <argument name="handlers" xsi:type="array">
-                <item name="system" xsi:type="object">Tapbuy\RedirectTracking\Logger\Handler</item>
+                <item name="tapbuy_handler" xsi:type="object">Tapbuy\RedirectTracking\Logger\Handler</item>
             </argument>
         </arguments>
     </virtualType>
@@ -27,7 +21,10 @@
         </arguments>
     </type>
 
-    <!-- Resolvers -->
-    <type name="Tapbuy\RedirectTracking\Model\Resolver\Redirect">
+    <!-- Inject custom logger into the Helper -->
+    <type name="Tapbuy\RedirectTracking\Helper\Data">
+        <arguments>
+            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\Logger</argument>
+        </arguments>
     </type>
 </config>
