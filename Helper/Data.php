@@ -21,6 +21,7 @@ use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\Stdlib\CookieManagerInterface;
 use Tapbuy\RedirectTracking\Model\Config;
 use Tapbuy\RedirectTracking\Model\Cookie;
+use Psr\Log\LoggerInterface;
 use phpseclib3\Crypt\AES;
 
 class Data extends AbstractHelper
@@ -76,6 +77,11 @@ class Data extends AbstractHelper
     private $appState;
 
     /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * Data constructor.
      *
      * @param Context $context
@@ -89,6 +95,7 @@ class Data extends AbstractHelper
      * @param RequestInterface $request
      * @param QuoteIdMaskFactory $quoteIdMaskFactory
      * @param State $appState
+     * @param LoggerInterface $logger
      */
     public function __construct(
         Context $context,
@@ -101,7 +108,8 @@ class Data extends AbstractHelper
         Header $httpHeader,
         RequestInterface $request,
         QuoteIdMaskFactory $quoteIdMaskFactory,
-        State $appState
+        State $appState,
+        LoggerInterface $logger
     ) {
         $this->config = $config;
         $this->cookieManager = $cookieManager;
@@ -113,6 +121,7 @@ class Data extends AbstractHelper
         $this->request = $request;
         $this->quoteIdMaskFactory = $quoteIdMaskFactory;
         $this->appState = $appState;
+        $this->logger = $logger;
         parent::__construct($context);
     }
 
@@ -211,6 +220,7 @@ class Data extends AbstractHelper
 
         foreach ($cookieNames as $cookieName) {
             $cookieValue = $this->cookieManager->getCookie($cookieName);
+            $this->logger->debug('getTrackingCookies cookieNames', ['cookieName' => $cookieName, 'cookieValue' => $cookieValue]);
             if ($cookieValue !== null) {
                 $trackingCookies[$cookieName] = $cookieValue;
             }
@@ -219,6 +229,7 @@ class Data extends AbstractHelper
         // Handle cookies starting with '_ga'
         $allCookies = $_COOKIE; // Use PHP's global $_COOKIE array for additional checks
         foreach ($allCookies as $name => $value) {
+            $this->logger->debug('getTrackingCookies allCookies', ['cookieName' => $name, 'cookieValue' => $value]);
             if (strpos($name, '_ga') === 0 && !isset($trackingCookies[$name])) {
                 $trackingCookies[$name] = $value;
             }
