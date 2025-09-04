@@ -21,6 +21,7 @@ class Config
     public const XML_PATH_API_URL = 'tapbuy/api/api_url';
     public const XML_PATH_API_KEY = 'tapbuy/api/api_key';
     public const XML_PATH_ENCRYPTION_KEY = 'tapbuy/api/encryption_key';
+    public const XML_PATH_LOCALE_FORMAT = 'tapbuy/api/locale_format';
     public const XML_PATH_GIFTING_ENABLED = 'tapbuy/gifting/enabled';
     public const XML_PATH_GIFTING_URL = 'tapbuy/gifting/gifting_url';
 
@@ -180,5 +181,20 @@ class Config
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
+    }
+
+    /**
+     * Get Locale Format (long|short)
+     *
+     * @param int|null $storeId
+     * @return string
+     */
+    public function getLocaleFormat($storeId = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_LOCALE_FORMAT,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ) ?: 'long';
     }
 }

@@ -154,7 +154,17 @@ class Data extends AbstractHelper
      */
     public function getLocale()
     {
-        return $this->localeResolver->getLocale();
+        $locale = $this->localeResolver->getLocale();
+        if ($this->config->getLocaleFormat() === 'short') {
+            if (strpos($locale, '_') !== false) {
+                return substr($locale, 0, strpos($locale, '_'));
+            }
+            if (strpos($locale, '-') !== false) {
+                return substr($locale, 0, strpos($locale, '-'));
+            }
+            return substr($locale, 0, 2);
+        }
+        return $locale;
     }
 
     /**
