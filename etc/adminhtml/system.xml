@@ -51,6 +51,14 @@
                         <field id="tapbuy/general/enabled">1</field>
                     </depends>
                 </field>
+                <field id="locale_format" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Locale format</label>
+                    <comment>Long: en_US, Short: en</comment>
+                    <source_model>Tapbuy\RedirectTracking\Model\Config\Source\LocaleFormat</source_model>
+                    <depends>
+                        <field id="tapbuy/general/enabled">1</field>
+                    </depends>
+                </field>
             </group>
             <group id="gifting" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Gifting Settings</label>
