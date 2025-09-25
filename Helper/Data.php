@@ -19,6 +19,7 @@ use Magento\Framework\HTTP\Header;
 use Magento\Framework\Locale\Resolver;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\Stdlib\CookieManagerInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use Tapbuy\RedirectTracking\Model\Config;
 use Tapbuy\RedirectTracking\Model\Cookie;
 use Psr\Log\LoggerInterface;
@@ -77,6 +78,11 @@ class Data extends AbstractHelper
     private $appState;
 
     /**
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
+
+    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -95,6 +101,7 @@ class Data extends AbstractHelper
      * @param RequestInterface $request
      * @param QuoteIdMaskFactory $quoteIdMaskFactory
      * @param State $appState
+     * @param StoreManagerInterface $storeManager
      * @param LoggerInterface $logger
      */
     public function __construct(
@@ -109,6 +116,7 @@ class Data extends AbstractHelper
         RequestInterface $request,
         QuoteIdMaskFactory $quoteIdMaskFactory,
         State $appState,
+        StoreManagerInterface $storeManager,
         LoggerInterface $logger
     ) {
         $this->config = $config;
@@ -121,6 +129,7 @@ class Data extends AbstractHelper
         $this->request = $request;
         $this->quoteIdMaskFactory = $quoteIdMaskFactory;
         $this->appState = $appState;
+        $this->storeManager = $storeManager;
         $this->logger = $logger;
         parent::__construct($context);
     }
@@ -325,5 +334,39 @@ class Data extends AbstractHelper
             // If we can't determine mode, assume production for security
             return false;
         }
+    }
+
+    /**
+     * Generate pixel tracking URL for headless frontends
+     *
+     * @param array $data
+     * @return string
+     */
+    public function generatePixelUrl(array $data = []): string
+    {
+        $baseUrl = $this->storeManager->getStore()->getBaseUrl();
+        $encodedData = base64_encode(json_encode($data));
+
+        return $baseUrl . 'tapbuy/pixel/track?data=' . $encodedData;
+    }
+
+    /**
+     * Generate pixel data for A/B test tracking
+     *
+     * @param string $cartId
+     * @param array $testResult
+     * @param string $action
+     * @return array
+     */
+    public function generatePixelData(string $cartId, array $testResult = [], string $action = 'redirect_check'): array
+    {
+        return [
+            'cart_id' => $cartId,
+            'test_id' => $testResult['id'] ?? null,
+            'action' => $action,
+            'timestamp' => time(),
+            'variation_id' => $testResult['variation_id'] ?? null,
+            'remove_test_cookie' => empty($testResult['id']) ? true : false
+        ];
     }
 }

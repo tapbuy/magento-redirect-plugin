@@ -2,6 +2,7 @@ type TapbuyRedirectResult {
     redirect: Boolean!
     redirect_url: String
     message: String
+    pixel_url: String
 }
 
 input TapbuyRedirectInput {
