@@ -88,6 +88,21 @@ class Data extends AbstractHelper
     private $logger;
 
     /**
+     * @var array
+     */
+    private $cookies = [];
+
+    /**
+     * @var array
+     */
+    private $trackingCookies = [];
+
+    /**
+     * @var array
+     */
+    private $storeCookies = [];
+
+    /**
      * Data constructor.
      *
      * @param Context $context
@@ -228,33 +243,62 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Sets multiple cookies based on the provided associative array.
+     *
+     * @param array $cookies An associative array where the key is the cookie name and the value is the cookie value.
+     *
+     * @return void
+     */
+    public function setCookies(array $cookies)
+    {
+        $this->cookies = $cookies;
+    }
+
+    /**
+     * Retrieves an array of cookies.
+     *
+     * @return array An array containing the cookies.
+     */
+    public function getCookies(): array
+    {
+        return $this->cookies;
+    }
+
+    /**
      * Get tracking cookies for Tapbuy
      *
      * @return array
      */
     public function getTrackingCookies()
     {
-        $trackingCookies = [];
         $cookieNames = ['_ga', '_pcid'];
 
         foreach ($cookieNames as $cookieName) {
             $cookieValue = $this->cookieManager->getCookie($cookieName);
-            $this->logger->debug('getTrackingCookies cookieNames', ['cookieName' => $cookieName, 'cookieValue' => $cookieValue]);
             if ($cookieValue !== null) {
-                $trackingCookies[$cookieName] = $cookieValue;
+                $this->trackingCookies[$cookieName] = $cookieValue;
             }
         }
 
-        // Handle cookies starting with '_ga'
-        $allCookies = $_COOKIE; // Use PHP's global $_COOKIE array for additional checks
+
+        $allCookies = $_COOKIE;
         foreach ($allCookies as $name => $value) {
-            $this->logger->debug('getTrackingCookies allCookies', ['cookieName' => $name, 'cookieValue' => $value]);
-            if (strpos($name, '_ga') === 0 && !isset($trackingCookies[$name])) {
-                $trackingCookies[$name] = $value;
+            foreach ($cookieNames as $cookieName) {
+                if (strpos($name, $cookieName) === 0 && !isset($this->trackingCookies[$name])) {
+                    $this->trackingCookies[$name] = $value;
+                }
             }
         }
 
-        return $trackingCookies;
+        foreach ($this->cookies as $name => $value) {
+            foreach ($cookieNames as $cookieName) {
+                if (strpos($name, $cookieName) === 0 && !isset($this->trackingCookies[$name])) {
+                    $this->trackingCookies[$name] = $value;
+                }
+            }
+        }
+
+        return $this->trackingCookies;
     }
 
     /**
@@ -264,19 +308,30 @@ class Data extends AbstractHelper
      */
     public function getStoreCookies()
     {
-        $storeCookies = [];
         $cookiePrefixes = ['PHPSESSID', 'form_key', 'mage-cache-', 'mage-messages'];
 
         foreach ($_COOKIE as $name => $value) {
             foreach ($cookiePrefixes as $prefix) {
                 if (strpos($name, $prefix) === 0) {
-                    $storeCookies[$name] = $value;
+                    $this->logger->debug('getStoreCookies matched', ['cookieName' => $name, 'cookieValue' => $value]);
+                    $this->storeCookies[$name] = $value;
                     break;
                 }
             }
         }
 
-        return $storeCookies;
+        // Add/override with custom cookies if provided
+        foreach ($this->cookies as $name => $value) {
+            foreach ($cookiePrefixes as $prefix) {
+                if (strpos($name, $prefix) === 0) {
+                    $this->logger->debug('getStoreCookies customCookies', ['cookieName' => $name, 'cookieValue' => $value]);
+                    $this->storeCookies[$name] = $value;
+                    break;
+                }
+            }
+        }
+
+        return $this->storeCookies;
     }
 
     /**

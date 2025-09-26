@@ -92,6 +92,18 @@ class Redirect implements ResolverInterface
         if (empty($cartId)) {
             throw new LocalizedException(new Phrase('Cart ID is required.'));
         }
+        $cookies = [];
+        if (isset($input['cookies'])) {
+            if (is_string($input['cookies'])) {
+                $decoded = json_decode($input['cookies'], true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $cookies = $decoded;
+                }
+            } elseif (is_array($input['cookies'])) {
+                $cookies = $input['cookies'];
+            }
+        }
+        $this->helper->setCookies($cookies);
 
         $forceRedirect = isset($input['force_redirect']) ? $input['force_redirect'] : null;
 
