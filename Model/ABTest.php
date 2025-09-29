@@ -13,6 +13,7 @@ use Psr\Log\LoggerInterface;
 use Tapbuy\RedirectTracking\Model\Config;
 use Tapbuy\RedirectTracking\Model\Service;
 use Tapbuy\RedirectTracking\Helper\Data;
+use Magento\Sales\Model\Order;
 
 class ABTest
 {
@@ -59,10 +60,11 @@ class ABTest
     /**
      * Process order transaction after order placement
      *
-     * @param \Magento\Sales\Model\Order $order
+     * @param Order $order
+     * @param int|null $abTestId Used with tapbuyConfirmOrder GraphQL mutation for headless implementations
      * @return void
      */
-    public function processOrderTransaction($order)
+    public function processOrderTransaction($order, $abTestId = null)
     {
         // Skip if Tapbuy is disabled or it's a Tapbuy API request
         if (!$this->config->isEnabled() || $this->helper->isTapbuyApiRequest()) {
@@ -70,7 +72,7 @@ class ABTest
         }
 
         try {
-            $result = $this->service->sendTransactionForOrder($order);
+            $result = $this->service->sendTransactionForOrder($order, $abTestId);
 
             if ($result && isset($result['id'])) {
                 $this->helper->setABTestIdCookie($result['id']);

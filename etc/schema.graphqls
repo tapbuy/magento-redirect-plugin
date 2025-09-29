@@ -2,13 +2,24 @@ type TapbuyRedirectResult {
     redirect: Boolean!
     redirect_url: String
     message: String
+    pixel_url: String
 }
 
 input TapbuyRedirectInput {
     cart_id: String!
     force_redirect: String
+    cookies: String
+}
+
+input TapbuyConfirmOrderInput {
+    order_number: String!
+    ab_test_id: String!
 }
 
 extend type Query {
     tapbuyRedirect(input: TapbuyRedirectInput!): TapbuyRedirectResult @resolver(class: "Tapbuy\\RedirectTracking\\Model\\Resolver\\Redirect")
+}
+
+extend type Mutation {
+    tapbuyConfirmOrder(input: TapbuyConfirmOrderInput!): Boolean @resolver(class: "Tapbuy\\RedirectTracking\\Model\\Resolver\\ConfirmOrder")
 }

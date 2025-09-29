@@ -15,6 +15,7 @@ use Psr\Log\LoggerInterface;
 use Tapbuy\RedirectTracking\Helper\Data;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\UrlInterface;
+use Magento\Sales\Model\Order;
 
 class Service
 {
@@ -142,17 +143,18 @@ class Service
     /**
      * Send transaction data to Tapbuy
      *
-     * @param \Magento\Sales\Model\Order $order
+     * @param Order $order
+     * @param int|null $abTestId Used with tapbuyConfirmOrder GraphQL mutation for headless implementations
      * @return array|bool
      */
-    public function sendTransactionForOrder($order)
+    public function sendTransactionForOrder($order, $abTestId = null)
     {
         if (!$this->config->isEnabled() || $this->helper->isTapbuyApiRequest()) {
             return false;
         }
 
         try {
-            // Build payload
+            $abTestId = $abTestId ?? $this->helper->getABTestId();
             $payload = [
                 'orderId' => $order->getIncrementId(),
                 'orderTotal' => (float)$order->getGrandTotal(),
@@ -160,7 +162,7 @@ class Service
                 'orderPaymentMethod' => $order->getPayment() ? $order->getPayment()->getMethod() : null,
                 'orderShippingMethod' => $order->getShippingMethod(),
                 'path' => $this->helper->getCurrentPath(),
-                'variationId' => $this->helper->getABTestId()
+                'variationId' => $abTestId
             ];
 
             return $this->sendRequest('/ab-test/transaction', $payload);
@@ -230,13 +232,13 @@ class Service
         $this->curl->addHeader('Origin', $this->urlBuilder->getBaseUrl());
         $this->curl->addHeader('User-Agent', $this->request->getHeader('User-Agent'));
         $this->curl->addHeader('X-Locale', $this->helper->getLocale());
-        
+
         // Only disable SSL verification in development
         if ($this->helper->isDevelopmentMode()) {
             $this->curl->setOption(CURLOPT_SSL_VERIFYHOST, false);
             $this->curl->setOption(CURLOPT_SSL_VERIFYPEER, false);
         }
-        
+
         // Set timeout
         $this->curl->setOption(CURLOPT_TIMEOUT, 30);
         $this->curl->setOption(CURLOPT_CONNECTTIMEOUT, 10);
