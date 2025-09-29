@@ -218,7 +218,13 @@ class Data extends AbstractHelper
      */
     public function getABTestId()
     {
-        return $this->cookie->getABTestId();
+        $cookie = $this->cookie->getABTestId();
+
+        if (!$cookie) {
+            $cookie = $this->getCookie(Cookie::COOKIE_NAME_ABTEST_ID);
+        }
+
+        return $cookie ?? null;
     }
 
     /**
@@ -262,6 +268,25 @@ class Data extends AbstractHelper
     public function getCookies(): array
     {
         return $this->cookies;
+    }
+
+    /**
+     * Retrieves the value of a cookie by its name.
+     * Wildcard matching is supported by suffixing the name with '*'.
+     *
+     * @param string $name The name of the cookie to retrieve.
+     * @return string|null The value of the cookie if it exists, or null otherwise.
+     */
+    public function getCookie(string $name)
+    {
+        if (strpos($name, '*') !== 0) {
+            foreach ($this->cookies as $cookieName => $cookieValue) {
+                if (strpos($cookieName, $name) === 0) {
+                    return $cookieValue;
+                }
+            }
+        }
+        return $this->cookies[$name] ?? null;
     }
 
     /**

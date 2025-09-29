@@ -110,7 +110,7 @@ class Cookie
      */
     public function setABTestIdCookie($value)
     {
-        $this->setCookie(self::COOKIE_NAME_ABTEST_ID, $value, true, true);
+        $this->setCookie(self::COOKIE_NAME_ABTEST_ID, $value, false, false);
     }
 
     /**
@@ -120,7 +120,7 @@ class Cookie
      */
     public function removeABTestIdCookie()
     {
-        $this->removeCookie(self::COOKIE_NAME_ABTEST_ID, true, true);
+        $this->removeCookie(self::COOKIE_NAME_ABTEST_ID, false, false);
     }
 
     /**
