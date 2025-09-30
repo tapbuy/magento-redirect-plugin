@@ -8,6 +8,7 @@ use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
 use Tapbuy\RedirectTracking\Model\Service;
 use Tapbuy\RedirectTracking\Model\Config;
+use Tapbuy\RedirectTracking\Helper\Data;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Framework\Exception\LocalizedException;
@@ -26,6 +27,11 @@ class Redirect implements ResolverInterface
     protected $config;
 
     /**
+     * @var Data
+     */
+    protected $helper;
+
+    /**
      * @var QuoteFactory
      */
     protected $quoteFactory;
@@ -42,17 +48,20 @@ class Redirect implements ResolverInterface
      *
      * @param Service $service
      * @param Config $config
+     * @param Data $helper
      * @param QuoteFactory $quoteFactory
      * @param QuoteIdMaskFactory $quoteIdMaskFactory
      */
     public function __construct(
         Service $service,
         Config $config,
+        Data $helper,
         QuoteFactory $quoteFactory,
         QuoteIdMaskFactory $quoteIdMaskFactory
     ) {
         $this->service = $service;
         $this->config = $config;
+        $this->helper = $helper;
         $this->quoteFactory = $quoteFactory;
         $this->quoteIdMaskFactory = $quoteIdMaskFactory;
     }
@@ -83,8 +92,21 @@ class Redirect implements ResolverInterface
         if (empty($cartId)) {
             throw new LocalizedException(new Phrase('Cart ID is required.'));
         }
+        $cookies = [];
+        if (isset($input['cookies'])) {
+            if (is_string($input['cookies'])) {
+                $decoded = json_decode($input['cookies'], true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $cookies = $decoded;
+                }
+            } elseif (is_array($input['cookies'])) {
+                $cookies = $input['cookies'];
+            }
+        }
+        $this->helper->setCookies($cookies);
 
         $forceRedirect = isset($input['force_redirect']) ? $input['force_redirect'] : null;
+        $referer = isset($input['referer']) ? $input['referer'] : null;
 
         if (!is_numeric($cartId)) {
             $maskedId = $this->quoteIdMaskFactory->create()->load($cartId, 'masked_id');
@@ -103,7 +125,8 @@ class Redirect implements ResolverInterface
             return [
                 'redirect' => false,
                 'redirect_url' => null,
-                'message' => 'Cart not found.'
+                'message' => 'Cart not found.',
+                'pixel_url' => null
             ];
         }
 
@@ -111,23 +134,31 @@ class Redirect implements ResolverInterface
             return [
                 'redirect' => false,
                 'redirect_url' => '/checkout',
-                'message' => 'Tapbuy is disabled.'
+                'message' => 'Tapbuy is disabled.',
+                'pixel_url' => null
             ];
         }
 
-        $result = $this->service->triggerABTest($quote, $forceRedirect);
+        $result = $this->service->triggerABTest($quote, $forceRedirect, $referer);
+
+        // Generate pixel URL for headless frontend
+        $pixelData = $this->helper->generatePixelData($args['input']['cart_id'], $result, 'redirect_check');
+        $pixelUrl = $this->helper->generatePixelUrl($pixelData);
+
         if ($result && isset($result['redirect']) && $result['redirect'] === true && isset($result['redirectURL'])) {
             return [
                 'redirect' => true,
                 'redirect_url' => $result['redirectURL'],
-                'message' => 'Redirect to Tapbuy.'
+                'message' => 'Redirect to Tapbuy.',
+                'pixel_url' => $pixelUrl
             ];
         }
 
         return [
             'redirect' => false,
             'redirect_url' => '/checkout',
-            'message' => 'Redirect to standard checkout.'
+            'message' => 'Redirect to standard checkout.',
+            'pixel_url' => $pixelUrl
         ];
     }
 }

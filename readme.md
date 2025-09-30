@@ -10,6 +10,7 @@ This module integrates Tapbuy's checkout experience with Magento 2, enabling A/B
 - Secure communication with Tapbuy API using AES encryption
 - Seamless integration with Magento's checkout flow
 - Cookie-based session management for A/B test tracking
+- Headless integration
 
 ## Installation
 
@@ -159,6 +160,10 @@ The module communicates with these Tapbuy API endpoints:
 
 - `POST /ab-test/variation`: Triggers A/B test and gets redirect decision
 - `POST /ab-test/transaction`: Sends transaction data after order placement
+
+### Headless Integration
+
+This module supports headless frontends (Next.js, Vue, SPA, etc.) via a pixel-based cookie sync and tracking mechanism. For details on how to use the pixel endpoint and integrate with your frontend, see [HEADLESS_INTEGRATION.md](./HEADLESS_INTEGRATION.md).
 
 ## Requirements
 
