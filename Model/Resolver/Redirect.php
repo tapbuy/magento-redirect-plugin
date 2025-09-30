@@ -106,6 +106,7 @@ class Redirect implements ResolverInterface
         $this->helper->setCookies($cookies);
 
         $forceRedirect = isset($input['force_redirect']) ? $input['force_redirect'] : null;
+        $referer = isset($input['referer']) ? $input['referer'] : null;
 
         if (!is_numeric($cartId)) {
             $maskedId = $this->quoteIdMaskFactory->create()->load($cartId, 'masked_id');
@@ -138,7 +139,7 @@ class Redirect implements ResolverInterface
             ];
         }
 
-        $result = $this->service->triggerABTest($quote, $forceRedirect);
+        $result = $this->service->triggerABTest($quote, $forceRedirect, $referer);
 
         // Generate pixel URL for headless frontend
         $pixelData = $this->helper->generatePixelData($args['input']['cart_id'], $result, 'redirect_check');
