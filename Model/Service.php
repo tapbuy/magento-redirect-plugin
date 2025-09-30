@@ -177,7 +177,7 @@ class Service
      *
      * @return array|bool
      */
-    public function triggerABTest($quote, $forceRedirect = null)
+    public function triggerABTest($quote, $forceRedirect = null, $referer = null)
     {
         if (!$this->config->isEnabled() || $this->helper->isTapbuyApiRequest()) {
             return ['redirect' => false];
@@ -197,6 +197,7 @@ class Service
                 'cookies' => $this->helper->getStoreCookies(),
                 'key' => $this->helper->getTapbuyKey($quote),
                 'locale' => $this->helper->getLocale(),
+                'referer' => $referer,
                 'forceRedirect' => $forceRedirect,
             ];
 
