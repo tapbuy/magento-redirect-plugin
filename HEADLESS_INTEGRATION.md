@@ -73,7 +73,7 @@ const response = await graphql(TAPBUY_REDIRECT_QUERY, {
 
 ### 3. Frontend fires pixel using the NPM module (with cookies)
 ```javascript
-import { TapbuyPixelTracker } from '@tapbuy/pixel-tracker';
+import { TapbuyPixelTracker } from '@tapbuy-group/pixel-tracker';
 
 const tracker = new TapbuyPixelTracker({
   cookies: { keys: ['tb-abtest-id', '_ga', '_pcid'] } // or 'all' for all cookies
