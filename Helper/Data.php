@@ -18,6 +18,7 @@ use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\HTTP\Header;
 use Magento\Framework\Locale\Resolver;
 use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Framework\UrlInterface;
 use Magento\Framework\Stdlib\CookieManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Tapbuy\RedirectTracking\Model\Config;
@@ -424,7 +425,7 @@ class Data extends AbstractHelper
      */
     public function generatePixelUrl(array $data = []): string
     {
-        $baseUrl = $this->storeManager->getStore()->getBaseUrl();
+        $baseUrl = $this->storeManager->getStore()->getBaseUrl(UrlInterface::URL_TYPE_WEB);
         $encodedData = base64_encode(json_encode($data));
 
         return $baseUrl . 'tapbuy/pixel/track?data=' . $encodedData;
