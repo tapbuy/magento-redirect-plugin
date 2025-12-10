@@ -66,7 +66,7 @@ class OrderSaveAfter implements ObserverInterface
                 // Process transaction for order
                 $this->abTest->processOrderTransaction($order);
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logger->error('Error in Tapbuy order save processing: ' . $e->getMessage());
         }
     }
