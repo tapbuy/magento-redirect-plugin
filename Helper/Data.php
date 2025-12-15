@@ -24,7 +24,6 @@ use Magento\Store\Model\StoreManagerInterface;
 use Tapbuy\RedirectTracking\Model\Config;
 use Tapbuy\RedirectTracking\Model\Cookie;
 use Psr\Log\LoggerInterface;
-use phpseclib3\Crypt\AES;
 
 class Data extends AbstractHelper
 {
@@ -393,13 +392,17 @@ class Data extends AbstractHelper
             return '';
         }
 
-        // Encrypt using AES
-        $aes = new AES('ecb');
-        $aes->setKey($encryptionKey);
-        $aes->setKeyLength(256);
-        $encryptedData = $aes->encrypt($jsonData);
+        // Encrypt using AES-256-GCM
+        $encryptionKey = substr(str_pad($encryptionKey, 32, "\0"), 0, 32);
+        $iv = random_bytes(12); // 12-byte nonce for GCM
+        $tag = '';
+        $cipherText = openssl_encrypt($jsonData, 'aes-256-gcm', $encryptionKey, OPENSSL_RAW_DATA, $iv, $tag);
 
-        return base64_encode($encryptedData);
+        if ($cipherText === false) {
+            return '';
+        }
+
+        return base64_encode($iv . $tag . $cipherText);
     }
 
     /**
