@@ -12,12 +12,13 @@ namespace Tapbuy\RedirectTracking\Model;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Serialize\Serializer\Json;
 use Psr\Log\LoggerInterface;
+use Tapbuy\RedirectTracking\Api\TapbuyServiceInterface;
 use Tapbuy\RedirectTracking\Helper\Data;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Sales\Model\Order;
 
-class Service
+class Service implements TapbuyServiceInterface
 {
     /**
      * @var Config
