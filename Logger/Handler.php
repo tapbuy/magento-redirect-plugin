@@ -13,6 +13,7 @@ use Magento\Framework\Logger\Handler\Base;
 use Magento\Framework\Filesystem\DriverInterface;
 use Magento\Framework\HTTP\Client\Curl;
 use Monolog\Logger;
+use Monolog\LogRecord;
 use Tapbuy\RedirectTracking\Model\Config;
 
 class Handler extends Base
@@ -53,18 +54,32 @@ class Handler extends Base
 
     /**
      * Write record to file and POST to /debug
-     * @param array $record
+     * Compatible with both Monolog 2.x (array) and Monolog 3.x (LogRecord)
+     * @param array|LogRecord $record
      */
-    protected function write(array $record): void
+    protected function write(array|LogRecord $record): void
     {
         parent::write($record);
 
+        // Normalize record for both Monolog 2.x (array) and 3.x (LogRecord)
+        if ($record instanceof LogRecord) {
+            $message = $record->message;
+            $level = $record->level->value;
+            $levelName = $record->level->name;
+            $context = $record->context;
+        } else {
+            $message = $record['message'];
+            $level = $record['level'];
+            $levelName = $record['level_name'];
+            $context = $record['context'] ?? [];
+        }
+
         $payload = [
-            'message' => (string)$record['message'],
-            'level' => (int)$record['level'],
-            'level_name' => (string)$record['level_name'],
-            'params' => isset($record['context']['params']) ? (array)$record['context']['params'] : (array)$record['context'],
-            'sentry' => ($record['context'] ?? [])['sentry'] ?? false
+            'message' => (string)$message,
+            'level' => (int)$level,
+            'level_name' => (string)$levelName,
+            'params' => isset($context['params']) ? (array)$context['params'] : (array)$context,
+            'sentry' => $context['sentry'] ?? false
         ];
 
         try {
