@@ -8,6 +8,7 @@
 
 namespace Tapbuy\RedirectTracking\Api;
 
+use Magento\Quote\Api\Data\CartInterface;
 use Magento\Sales\Model\Order;
 
 interface TapbuyServiceInterface
@@ -25,14 +26,18 @@ interface TapbuyServiceInterface
      * Send transaction data to Tapbuy
      *
      * @param Order $order
+     * @param int|null $abTestId
      * @return array|bool
      */
-    public function sendTransactionForOrder($order);
+    public function sendTransactionForOrder($order, $abTestId = null);
 
     /**
      * Trigger A/B test
      *
+     * @param CartInterface $quote
+     * @param bool|null $forceRedirect
+     * @param string|null $referer
      * @return array|bool
      */
-    public function triggerABTest();
+    public function triggerABTest($quote, $forceRedirect = null, $referer = null);
 }
