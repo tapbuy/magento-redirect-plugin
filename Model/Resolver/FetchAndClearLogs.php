@@ -12,12 +12,16 @@ namespace Tapbuy\RedirectTracking\Model\Resolver;
 use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Query\ResolverInterface;
 use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
-use Magento\Framework\GraphQl\Exception\GraphQlAuthorizationException;
 use Tapbuy\RedirectTracking\Model\Authorization\TokenAuthorization;
 use Tapbuy\RedirectTracking\Logger\Handler as LogHandler;
 
 class FetchAndClearLogs implements ResolverInterface
 {
+    /**
+     * Required ACL resource for managing logs
+     */
+    private const ACL_RESOURCE = TokenAuthorization::TAPBUY_LOGS;
+
     /**
      * @var TokenAuthorization
      */
@@ -50,10 +54,8 @@ class FetchAndClearLogs implements ResolverInterface
         array $value = null,
         array $args = null
     ) {
-        // Require integration token authorization
-        if (!$this->tokenAuthorization->isAuthorized()) {
-            throw new GraphQlAuthorizationException(__('Integration token authorization required'));
-        }
+        // Require proper ACL authorization for log management
+        $this->tokenAuthorization->authorize(self::ACL_RESOURCE);
 
         $limit = $args['limit'] ?? null;
         $logs = $this->fetchAndClearLogs($limit);

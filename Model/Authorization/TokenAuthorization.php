@@ -6,6 +6,9 @@
  * Centralized token authorization for all Tapbuy modules.
  * Provides both simple authorization check and permission-based authorization.
  *
+ * Supports Tapbuy-specific ACL resources with backward compatibility for legacy Magento resources.
+ * During the transition period, both old Magento resources and new Tapbuy resources are accepted.
+ *
  * @category  Tapbuy
  * @package   Tapbuy_RedirectTracking
  */
@@ -19,6 +22,74 @@ use Magento\Integration\Model\IntegrationService;
 
 class TokenAuthorization
 {
+    /**
+     * Tapbuy super-admin resource - grants access to all Tapbuy resources
+     */
+    public const TAPBUY_SUPER_ADMIN = 'Tapbuy_RedirectTracking::tapbuy';
+
+    /**
+     * Tapbuy ACL Resources
+     */
+    public const TAPBUY_ORDER_VIEW = 'Tapbuy_RedirectTracking::order_view';
+    public const TAPBUY_ORDER_EDIT = 'Tapbuy_RedirectTracking::order_edit';
+    public const TAPBUY_ORDER_ASSIGN = 'Tapbuy_RedirectTracking::order_assign';
+    public const TAPBUY_CART_UNLOCK = 'Tapbuy_RedirectTracking::cart_unlock';
+    public const TAPBUY_CART_DEACTIVATE = 'Tapbuy_RedirectTracking::cart_deactivate';
+    public const TAPBUY_CUSTOMER_SEARCH = 'Tapbuy_RedirectTracking::customer_search';
+    public const TAPBUY_CUSTOMER_VIEW = 'Tapbuy_RedirectTracking::customer_view';
+    public const TAPBUY_MODULES_VERSIONS = 'Tapbuy_RedirectTracking::modules_versions';
+    public const TAPBUY_LOGS = 'Tapbuy_RedirectTracking::logs';
+
+    /**
+     * Mapping of Tapbuy resources to legacy Magento resources for backward compatibility.
+     * During the transition period, either the Tapbuy resource OR the legacy resource will grant access.
+     */
+    private const LEGACY_RESOURCE_MAPPING = [
+        self::TAPBUY_ORDER_VIEW => 'Magento_Sales::actions_view',
+        self::TAPBUY_ORDER_EDIT => 'Magento_Sales::actions_edit',
+        self::TAPBUY_ORDER_ASSIGN => 'Magento_Sales::actions_edit',
+        self::TAPBUY_CART_UNLOCK => 'Magento_Sales::actions_edit',
+        self::TAPBUY_CART_DEACTIVATE => 'Magento_Sales::actions_edit',
+        self::TAPBUY_CUSTOMER_SEARCH => 'Magento_Customer::customer',
+        self::TAPBUY_CUSTOMER_VIEW => 'Magento_Customer::customer',
+        self::TAPBUY_MODULES_VERSIONS => 'Magento_Backend::admin',
+        self::TAPBUY_LOGS => 'Magento_Backend::admin',
+    ];
+
+    /**
+     * Parent resources that grant access to child resources
+     */
+    private const PARENT_RESOURCES = [
+        self::TAPBUY_SUPER_ADMIN => [
+            self::TAPBUY_ORDER_VIEW,
+            self::TAPBUY_ORDER_EDIT,
+            self::TAPBUY_ORDER_ASSIGN,
+            self::TAPBUY_CART_UNLOCK,
+            self::TAPBUY_CART_DEACTIVATE,
+            self::TAPBUY_CUSTOMER_SEARCH,
+            self::TAPBUY_CUSTOMER_VIEW,
+            self::TAPBUY_MODULES_VERSIONS,
+            self::TAPBUY_LOGS,
+        ],
+        'Tapbuy_RedirectTracking::order' => [
+            self::TAPBUY_ORDER_VIEW,
+            self::TAPBUY_ORDER_EDIT,
+            self::TAPBUY_ORDER_ASSIGN,
+        ],
+        'Tapbuy_RedirectTracking::cart' => [
+            self::TAPBUY_CART_UNLOCK,
+            self::TAPBUY_CART_DEACTIVATE,
+        ],
+        'Tapbuy_RedirectTracking::customer' => [
+            self::TAPBUY_CUSTOMER_SEARCH,
+            self::TAPBUY_CUSTOMER_VIEW,
+        ],
+        'Tapbuy_RedirectTracking::system' => [
+            self::TAPBUY_MODULES_VERSIONS,
+            self::TAPBUY_LOGS,
+        ],
+    ];
+
     /**
      * @var RequestInterface
      */
@@ -73,6 +144,13 @@ class TokenAuthorization
     /**
      * Check if the token has the required permission.
      *
+     * Supports Tapbuy-specific ACL resources with backward compatibility:
+     * - Checks for Magento super-admin resources (Magento_Backend::admin, Magento_Backend::all)
+     * - Checks for Tapbuy super-admin resource (Tapbuy::tapbuy)
+     * - Checks for parent Tapbuy resources that grant access to child resources
+     * - Checks for the specific required resource
+     * - (Backward compatibility) Checks for legacy Magento resources mapped to Tapbuy resources
+     *
      * @param string $requiredResource The resource to check permissions for.
      * @throws GraphQlAuthorizationException If the token is invalid or lacks permissions.
      */
@@ -95,13 +173,52 @@ class TokenAuthorization
         // Get integration permissions
         $permissions = $this->integrationService->getSelectedResources($integration->getId());
 
-        if (
-            !in_array('Magento_Backend::admin', $permissions) &&
-            !in_array('Magento_Backend::all', $permissions) &&
-            !in_array($requiredResource, $permissions)
-        ) {
+        // Check if authorized
+        if (!$this->hasPermission($permissions, $requiredResource)) {
             throw new GraphQlAuthorizationException(__('You do not have permission to access this resource.'));
         }
+    }
+
+    /**
+     * Check if the given permissions grant access to the required resource.
+     *
+     * @param array $permissions List of granted permissions
+     * @param string $requiredResource The required resource
+     * @return bool
+     */
+    private function hasPermission(array $permissions, string $requiredResource): bool
+    {
+        // Check for Magento super-admin resources
+        if (in_array('Magento_Backend::admin', $permissions) || in_array('Magento_Backend::all', $permissions)) {
+            return true;
+        }
+
+        // Check for Tapbuy super-admin resource
+        if (in_array(self::TAPBUY_SUPER_ADMIN, $permissions)) {
+            return true;
+        }
+
+        // Check for direct permission
+        if (in_array($requiredResource, $permissions)) {
+            return true;
+        }
+
+        // Check for parent resources that grant access to the required resource
+        foreach (self::PARENT_RESOURCES as $parentResource => $childResources) {
+            if (in_array($parentResource, $permissions) && in_array($requiredResource, $childResources)) {
+                return true;
+            }
+        }
+
+        // Backward compatibility: Check for legacy Magento resources
+        if (isset(self::LEGACY_RESOURCE_MAPPING[$requiredResource])) {
+            $legacyResource = self::LEGACY_RESOURCE_MAPPING[$requiredResource];
+            if (in_array($legacyResource, $permissions)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
