@@ -129,7 +129,7 @@ class Service implements TapbuyServiceInterface
 
             return false;
         } catch (\Exception $e) {
-            $this->logger->logException($e, 'Error sending Tapbuy API request', [
+            $this->logger->logException('Error sending Tapbuy API request', $e, [
                 'endpoint' => $endpoint,
             ]);
 
@@ -164,7 +164,7 @@ class Service implements TapbuyServiceInterface
 
             return $this->sendRequest('/ab-test/transaction', $payload);
         } catch (\Exception $e) {
-            $this->logger->logException($e, 'Error sending transaction to Tapbuy', [
+            $this->logger->logException('Error sending transaction to Tapbuy', $e, [
                 'order_id' => $order->getIncrementId(),
             ]);
             return false;
@@ -212,7 +212,7 @@ class Service implements TapbuyServiceInterface
             $this->helper->removeABTestIdCookie();
             return ['redirect' => false];
         } catch (\Exception $e) {
-            $this->logger->logException($e, 'Error triggering A/B test');
+            $this->logger->logException('Error triggering A/B test', $e);
             $this->helper->removeABTestIdCookie();
             return ['redirect' => false];
         }

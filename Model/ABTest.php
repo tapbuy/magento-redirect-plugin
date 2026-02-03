@@ -80,7 +80,7 @@ class ABTest
                 $this->helper->removeABTestIdCookie();
             }
         } catch (\Exception $e) {
-            $this->logger->logException($e, 'Error processing order transaction', [
+            $this->logger->logException('Error processing order transaction', $e, [
                 'order_id' => $order->getIncrementId(),
             ]);
             $this->helper->removeABTestIdCookie();

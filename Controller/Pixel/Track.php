@@ -96,7 +96,7 @@ class Track implements HttpGetActionInterface
                 $this->processPixelData($pixelData);
             }
         } catch (\Exception $e) {
-            $this->logger->logException($e, 'Pixel tracking error', [
+            $this->logger->logException('Pixel tracking error', $e, [
                 'data' => $this->request->getParam('data'),
             ]);
         }
