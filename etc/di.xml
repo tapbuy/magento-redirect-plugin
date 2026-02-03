@@ -7,8 +7,8 @@
     <preference for="Tapbuy\RedirectTracking\Api\TapbuyServiceInterface"
                 type="Tapbuy\RedirectTracking\Model\Service"/>
 
-    <!-- Custom Monolog instance with our Handler -->
-    <virtualType name="Tapbuy\RedirectTracking\Logger\Logger" type="Magento\Framework\Logger\Monolog">
+    <!-- Tapbuy Centralized Logger Configuration -->
+    <virtualType name="Tapbuy\RedirectTracking\Logger\VirtualLogger" type="Magento\Framework\Logger\Monolog">
         <arguments>
             <argument name="name" xsi:type="string">tapbuy</argument>
             <argument name="handlers" xsi:type="array">
@@ -17,28 +17,61 @@
         </arguments>
     </virtualType>
 
-    <!-- Inject logger where LoggerInterface is type‑hinted -->
+    <!-- Make TapbuyLogger use the virtual logger configuration -->
+    <type name="Tapbuy\RedirectTracking\Logger\TapbuyLogger">
+        <arguments>
+            <argument name="name" xsi:type="string">tapbuy</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="tapbuy_handler" xsi:type="object">Tapbuy\RedirectTracking\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- FetchAndClearLogs Resolver -->
+    <type name="Tapbuy\RedirectTracking\Model\Resolver\FetchAndClearLogs">
+        <arguments>
+            <argument name="tokenAuthorization" xsi:type="object">Tapbuy\RedirectTracking\Model\Authorization\TokenAuthorization</argument>
+            <argument name="logHandler" xsi:type="object">Tapbuy\RedirectTracking\Logger\Handler</argument>
+        </arguments>
+    </type>
+
+    <!-- Token Authorization -->
+    <type name="Tapbuy\RedirectTracking\Model\Authorization\TokenAuthorization">
+        <arguments>
+            <argument name="requestInterface" xsi:type="object">Magento\Framework\App\RequestInterface</argument>
+            <argument name="tokenModelFactory" xsi:type="object">Magento\Integration\Model\Oauth\TokenFactory</argument>
+            <argument name="integrationService" xsi:type="object">Magento\Integration\Model\IntegrationService</argument>
+        </arguments>
+    </type>
+
+    <!-- Inject centralized Tapbuy Logger where needed -->
     <type name="Tapbuy\RedirectTracking\Model\Service">
         <arguments>
-            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\Logger</argument>
+            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\TapbuyLogger</argument>
         </arguments>
     </type>
 
     <type name="Tapbuy\RedirectTracking\Helper\Data">
         <arguments>
-            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\Logger</argument>
+            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\TapbuyLogger</argument>
         </arguments>
     </type>
 
     <type name="Tapbuy\RedirectTracking\Model\ABTest">
         <arguments>
-            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\Logger</argument>
+            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\TapbuyLogger</argument>
         </arguments>
     </type>
 
     <type name="Tapbuy\RedirectTracking\Observer\OrderSaveAfter">
         <arguments>
-            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\Logger</argument>
+            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\TapbuyLogger</argument>
+        </arguments>
+    </type>
+
+    <type name="Tapbuy\RedirectTracking\Controller\Pixel\Track">
+        <arguments>
+            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\TapbuyLogger</argument>
         </arguments>
     </type>
 </config>
