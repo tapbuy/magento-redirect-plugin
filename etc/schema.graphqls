@@ -23,4 +23,22 @@ extend type Query {
 
 extend type Mutation {
     tapbuyConfirmOrder(input: TapbuyConfirmOrderInput!): Boolean @resolver(class: "Tapbuy\\RedirectTracking\\Model\\Resolver\\ConfirmOrder")
+    tapbuyFetchAndClearLogs(
+        limit: Int @doc(description: "Maximum number of log entries to return. If null, returns all logs.")
+    ): TapbuyFetchAndClearLogsOutput @resolver(class: "Tapbuy\\RedirectTracking\\Model\\Resolver\\FetchAndClearLogs") @doc(description: "Fetch all Tapbuy log entries and clear them from the log file. Requires integration token authorization.")
+}
+
+type TapbuyFetchAndClearLogsOutput {
+    logs: [TapbuyLogEntry] @doc(description: "Array of log entries that were fetched and cleared")
+}
+
+type TapbuyLogEntry {
+    message: String! @doc(description: "The log message")
+    level: Int! @doc(description: "Numeric log level (100=DEBUG, 200=INFO, 250=NOTICE, 300=WARNING, 400=ERROR, 500=CRITICAL, 550=ALERT, 600=EMERGENCY)")
+    level_name: String! @doc(description: "Human-readable log level name")
+    context: String @doc(description: "JSON-encoded context data associated with the log entry")
+    stacktrace: String @doc(description: "Stack trace if available, especially for errors and exceptions")
+    error_details: String @doc(description: "JSON-encoded exception details if this log was from an exception")
+    datetime: String! @doc(description: "ISO 8601 formatted datetime when the log was recorded")
+    channel: String @doc(description: "Logger channel name")
 }

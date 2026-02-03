@@ -174,7 +174,9 @@ This module supports headless frontends (Next.js, Vue, SPA, etc.) via a pixel-ba
 
 ## Logging
 
-All Tapbuy-related activities are logged to `/var/log/tapbuy.log` for debugging and monitoring purposes.
+This module provides the **centralized logging system** for all Tapbuy Magento modules. Logs are written to `var/log/tapbuy-checkout.log` in JSON format and can be retrieved via GraphQL for forwarding to Sentry.
+
+For complete documentation on the logging system, including usage examples, best practices, and API integration, see **[docs/LOGGING.md](./docs/LOGGING.md)**.
 
 ## Development Mode
 
