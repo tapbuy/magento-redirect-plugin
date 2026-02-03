@@ -6,35 +6,54 @@ use Magento\Framework\GraphQl\Query\ResolverInterface;
 use Magento\Framework\GraphQl\Query\Resolver\ContextInterface;
 use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
+use Magento\Framework\GraphQl\Exception\GraphQlInputException;
 use Magento\Sales\Model\OrderFactory;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Phrase;
+use Magento\Sales\Api\OrderPaymentRepositoryInterface;
+use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
 use Tapbuy\RedirectTracking\Model\ABTest;
 
 class ConfirmOrder implements ResolverInterface
 {
+    private const TRACKING_FLAG = 'tapbuy_abtest_tracked';
+
     /**
      * @var OrderFactory
      */
     private $orderFactory;
 
     /**
-     * @var \Tapbuy\RedirectTracking\Model\ABTest
+     * @var ABTest
      */
     private $abTest;
+
+    /**
+     * @var TapbuyLogger
+     */
+    private $logger;
+
+    /**
+     * @var OrderPaymentRepositoryInterface
+     */
+    private $paymentRepository;
 
     /**
      * ConfirmOrder constructor.
      *
      * @param OrderFactory $orderFactory
-     * @param \Tapbuy\RedirectTracking\Model\ABTest $abTest
+     * @param ABTest $abTest
+     * @param TapbuyLogger $logger
+     * @param OrderPaymentRepositoryInterface $paymentRepository
      */
     public function __construct(
         OrderFactory $orderFactory,
-        \Tapbuy\RedirectTracking\Model\ABTest $abTest
+        ABTest $abTest,
+        TapbuyLogger $logger,
+        OrderPaymentRepositoryInterface $paymentRepository
     ) {
         $this->orderFactory = $orderFactory;
         $this->abTest = $abTest;
+        $this->logger = $logger;
+        $this->paymentRepository = $paymentRepository;
     }
 
     /**
@@ -46,7 +65,7 @@ class ConfirmOrder implements ResolverInterface
      * @param array|null $value
      * @param array|null $args
      * @return bool
-     * @throws LocalizedException
+     * @throws GraphQlInputException
      */
     public function resolve(
         Field $field,
@@ -59,18 +78,46 @@ class ConfirmOrder implements ResolverInterface
         $orderNumber = $input['order_number'] ?? null;
         $abTestId = $input['ab_test_id'] ?? null;
 
-        if (!$orderNumber || !$abTestId) {
-            throw new LocalizedException(new Phrase('Both order_number and ab_test_id are required.'));
+        try {
+            if (!$orderNumber || !$abTestId) {
+                throw new GraphQlInputException(__('Both order_number and ab_test_id are required.'));
+            }
+
+            $order = $this->orderFactory->create()->loadByIncrementId($orderNumber);
+
+            if (!$order->getId()) {
+                $this->logger->warning('ConfirmOrder: Order not found', [
+                    'order_number' => $orderNumber,
+                    'ab_test_id' => $abTestId,
+                ]);
+                return true;
+            }
+
+            $payment = $order->getPayment();
+
+            // Idempotency check: if already tracked, return silently
+            if ($payment && $payment->getAdditionalInformation(self::TRACKING_FLAG)) {
+                $this->logger->debug('ConfirmOrder: Order already tracked, skipping', [
+                    'order_number' => $orderNumber,
+                ]);
+                return true;
+            }
+
+            $this->abTest->processOrderTransaction($order, $abTestId);
+
+            // Set the tracking flag to prevent duplicate processing
+            if ($payment) {
+                $payment->setAdditionalInformation(self::TRACKING_FLAG, true);
+                $this->paymentRepository->save($payment);
+            }
+
+            return true;
+        } catch (\Exception $e) {
+            $this->logger->logException('ConfirmOrder: Error processing order confirmation', $e, [
+                'order_number' => $orderNumber,
+                'ab_test_id' => $abTestId,
+            ]);
+            return true;
         }
-
-        $order = $this->orderFactory->create()->loadByIncrementId($orderNumber);
-
-        if (!$order->getId()) {
-            throw new LocalizedException(new Phrase('Order not found.'));
-        }
-
-        $this->abTest->processOrderTransaction($order, $abTestId);
-
-        return true;
     }
 }
