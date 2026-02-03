@@ -9,7 +9,7 @@
 
 namespace Tapbuy\RedirectTracking\Model;
 
-use Psr\Log\LoggerInterface;
+use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
 use Tapbuy\RedirectTracking\Model\Config;
 use Tapbuy\RedirectTracking\Model\Service;
 use Tapbuy\RedirectTracking\Helper\Data;
@@ -33,7 +33,7 @@ class ABTest
     private $helper;
 
     /**
-     * @var LoggerInterface
+     * @var TapbuyLogger
      */
     private $logger;
 
@@ -43,13 +43,13 @@ class ABTest
      * @param Config $config
      * @param Service $service
      * @param Data $helper
-     * @param LoggerInterface $logger
+     * @param TapbuyLogger $logger
      */
     public function __construct(
         Config $config,
         Service $service,
         Data $helper,
-        LoggerInterface $logger,
+        TapbuyLogger $logger,
     ) {
         $this->config = $config;
         $this->service = $service;
@@ -80,7 +80,9 @@ class ABTest
                 $this->helper->removeABTestIdCookie();
             }
         } catch (\Exception $e) {
-            $this->logger->error('Error processing order transaction: ' . $e->getMessage());
+            $this->logger->logException($e, 'Error processing order transaction', [
+                'order_id' => $order->getIncrementId(),
+            ]);
             $this->helper->removeABTestIdCookie();
         }
     }

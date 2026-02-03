@@ -10,7 +10,7 @@ namespace Tapbuy\RedirectTracking\Observer;
 
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Psr\Log\LoggerInterface;
+use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
 use Tapbuy\RedirectTracking\Model\ABTest;
 use Tapbuy\RedirectTracking\Model\Config;
 
@@ -27,7 +27,7 @@ class OrderSaveAfter implements ObserverInterface
     private $abTest;
 
     /**
-     * @var LoggerInterface
+     * @var TapbuyLogger
      */
     private $logger;
 
@@ -36,12 +36,12 @@ class OrderSaveAfter implements ObserverInterface
      *
      * @param Config $config
      * @param ABTest $abTest
-     * @param LoggerInterface $logger
+     * @param TapbuyLogger $logger
      */
     public function __construct(
         Config $config,
         ABTest $abTest,
-        LoggerInterface $logger
+        TapbuyLogger $logger
     ) {
         $this->config = $config;
         $this->abTest = $abTest;
@@ -67,7 +67,7 @@ class OrderSaveAfter implements ObserverInterface
                 $this->abTest->processOrderTransaction($order);
             }
         } catch (\Exception $e) {
-            $this->logger->error('Error in Tapbuy order save processing: ' . $e->getMessage());
+            $this->logger->logException($e, 'Error in Tapbuy order save processing');
         }
     }
 }

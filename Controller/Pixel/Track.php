@@ -14,7 +14,7 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\Result\Raw;
 use Magento\Framework\Controller\Result\RawFactory;
-use Psr\Log\LoggerInterface;
+use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
 use Tapbuy\RedirectTracking\Helper\Data;
 
 class Track implements HttpGetActionInterface
@@ -35,7 +35,7 @@ class Track implements HttpGetActionInterface
     private $helper;
 
     /**
-     * @var LoggerInterface
+     * @var TapbuyLogger
      */
     private $logger;
 
@@ -45,13 +45,13 @@ class Track implements HttpGetActionInterface
      * @param RequestInterface $request
      * @param RawFactory $rawFactory
      * @param Data $helper
-     * @param LoggerInterface $logger
+     * @param TapbuyLogger $logger
      */
     public function __construct(
         RequestInterface $request,
         RawFactory $rawFactory,
         Data $helper,
-        LoggerInterface $logger
+        TapbuyLogger $logger
     ) {
         $this->request = $request;
         $this->rawFactory = $rawFactory;
@@ -96,9 +96,8 @@ class Track implements HttpGetActionInterface
                 $this->processPixelData($pixelData);
             }
         } catch (\Exception $e) {
-            $this->logger->error('Pixel tracking error: ' . $e->getMessage(), [
+            $this->logger->logException($e, 'Pixel tracking error', [
                 'data' => $this->request->getParam('data'),
-                'trace' => $e->getTraceAsString()
             ]);
         }
 
