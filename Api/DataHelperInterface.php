@@ -86,6 +86,7 @@ interface DataHelperInterface
 
     /**
      * Retrieves the value of a cookie by its name.
+     *
      * Wildcard matching is supported by suffixing the name with '*'.
      *
      * @param string $name The name of the cookie to retrieve.

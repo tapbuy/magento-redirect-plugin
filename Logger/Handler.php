@@ -67,10 +67,12 @@ class Handler extends RotatingFileHandler implements LogHandlerInterface
     }
 
     /**
-     * Write record to file with enhanced context
+     * Write record to file with enhanced context.
+     *
      * Compatible with both Monolog 2.x (array) and Monolog 3.x (LogRecord)
      *
      * @param array|LogRecord $record
+     * @return void
      */
     protected function write(array|LogRecord $record): void
     {

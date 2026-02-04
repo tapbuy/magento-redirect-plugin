@@ -18,6 +18,8 @@ class TapbuyLogger extends Logger implements LoggerInterface
     /**
      * TapbuyLogger constructor.
      *
+     * Intentional override to set custom default channel name from TapbuyConstants.
+     *
      * @param string $name
      * @param array $handlers
      * @param array $processors

@@ -194,6 +194,7 @@ class Data extends AbstractHelper implements DataHelperInterface
     /**
      * Check if cart has products
      *
+     * @param \Magento\Quote\Api\Data\CartInterface|null $quote
      * @return bool
      */
     public function hasProductsInCart($quote)
@@ -262,6 +263,7 @@ class Data extends AbstractHelper implements DataHelperInterface
 
     /**
      * Retrieves the value of a cookie by its name.
+     *
      * Wildcard matching is supported by suffixing the name with '*'.
      *
      * @param string $name The name of the cookie to retrieve.
@@ -294,7 +296,6 @@ class Data extends AbstractHelper implements DataHelperInterface
                 $this->trackingCookies[$cookieName] = $cookieValue;
             }
         }
-
 
         $allCookies = $_COOKIE;
         foreach ($allCookies as $name => $value) {
@@ -339,7 +340,10 @@ class Data extends AbstractHelper implements DataHelperInterface
         foreach ($this->cookies as $name => $value) {
             foreach ($cookiePrefixes as $prefix) {
                 if (strpos($name, $prefix) === 0) {
-                    $this->logger->debug('getStoreCookies customCookies', ['cookieName' => $name, 'cookieValue' => $value]);
+                    $this->logger->debug(
+                        'getStoreCookies customCookies',
+                        ['cookieName' => $name, 'cookieValue' => $value]
+                    );
                     $this->storeCookies[$name] = $value;
                     break;
                 }
@@ -352,6 +356,7 @@ class Data extends AbstractHelper implements DataHelperInterface
     /**
      * Get encrypted key for Tapbuy
      *
+     * @param \Magento\Quote\Api\Data\CartInterface|null $quote
      * @return string
      */
     public function getTapbuyKey($quote)

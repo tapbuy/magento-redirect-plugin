@@ -184,6 +184,9 @@ class Service implements TapbuyServiceInterface
     /**
      * Trigger A/B test
      *
+     * @param \Magento\Quote\Api\Data\CartInterface $quote
+     * @param bool|null $forceRedirect
+     * @param string|null $referer
      * @return array|bool
      */
     public function triggerABTest($quote, $forceRedirect = null, $referer = null)
