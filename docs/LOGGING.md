@@ -60,7 +60,7 @@ In your module's `composer.json`:
 ```json
 {
     "require": {
-        "tapbuy/redirect-tracking": "^1.4"
+        "tapbuy/redirect-tracking": "^1.5"
     }
 }
 ```
