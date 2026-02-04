@@ -9,12 +9,13 @@ use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
 use Magento\Framework\GraphQl\Exception\GraphQlInputException;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Sales\Api\OrderPaymentRepositoryInterface;
+use Tapbuy\RedirectTracking\Api\TapbuyConstants;
 use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
 use Tapbuy\RedirectTracking\Model\ABTest;
 
 class ConfirmOrder implements ResolverInterface
 {
-    private const TRACKING_FLAG = 'tapbuy_abtest_tracked';
+    private const TRACKING_FLAG = TapbuyConstants::ABTEST_TRACKING_FLAG;
 
     /**
      * @var OrderFactory

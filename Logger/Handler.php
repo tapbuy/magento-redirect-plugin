@@ -17,13 +17,14 @@ use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
 use Monolog\LogRecord;
+use Tapbuy\RedirectTracking\Api\TapbuyConstants;
 
 class Handler extends RotatingFileHandler
 {
     /**
      * @var string
      */
-    protected const LOG_FILE = 'tapbuy-checkout.log';
+    protected const LOG_FILE = TapbuyConstants::LOG_FILE_NAME;
 
     /**
      * @var int Maximum file size before rotation (5MB)
@@ -145,7 +146,8 @@ class Handler extends RotatingFileHandler
     public function getAllLogFiles(): array
     {
         $basePath = BP . '/var/log/';
-        $pattern = $basePath . 'tapbuy-checkout*.log';
+        // Use LOG_FILE constant to derive the pattern (replace .log with *.log for glob)
+        $pattern = $basePath . str_replace('.log', '*.log', self::LOG_FILE);
 
         $files = glob($pattern);
         return $files ?: [];

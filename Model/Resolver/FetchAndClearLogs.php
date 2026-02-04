@@ -12,6 +12,7 @@ namespace Tapbuy\RedirectTracking\Model\Resolver;
 use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Query\ResolverInterface;
 use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
+use Tapbuy\RedirectTracking\Api\TapbuyConstants;
 use Tapbuy\RedirectTracking\Model\Authorization\TokenAuthorization;
 use Tapbuy\RedirectTracking\Logger\Handler as LogHandler;
 
@@ -172,7 +173,7 @@ class FetchAndClearLogs implements ResolverInterface
             'stacktrace' => $stacktrace,
             'error_details' => $errorDetails ? json_encode($errorDetails) : null,
             'datetime' => $entry['datetime'] ?? date('c'),
-            'channel' => $entry['channel'] ?? 'tapbuy',
+            'channel' => $entry['channel'] ?? TapbuyConstants::LOGGER_CHANNEL_NAME,
         ];
     }
 }

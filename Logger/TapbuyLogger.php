@@ -10,6 +10,7 @@
 namespace Tapbuy\RedirectTracking\Logger;
 
 use Monolog\Logger;
+use Tapbuy\RedirectTracking\Api\TapbuyConstants;
 
 class TapbuyLogger extends Logger
 {
@@ -21,7 +22,7 @@ class TapbuyLogger extends Logger
      * @param array $processors
      */
     public function __construct(
-        $name = 'tapbuy',
+        $name = TapbuyConstants::LOGGER_CHANNEL_NAME,
         array $handlers = [],
         array $processors = []
     ) {
