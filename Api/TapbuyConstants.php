@@ -36,7 +36,7 @@ class TapbuyConstants
     public const LOGGER_CHANNEL_NAME = 'tapbuy';
 
     /**
-     * Log file name prefix.
+     * Base log file name (including the `.log` extension).
      */
     public const LOG_FILE_NAME = 'tapbuy-checkout.log';
 
