@@ -11,7 +11,7 @@ namespace Tapbuy\RedirectTracking\Model;
 
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Serialize\Serializer\Json;
-use Psr\Log\LoggerInterface;
+use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
 use Tapbuy\RedirectTracking\Api\TapbuyServiceInterface;
 use Tapbuy\RedirectTracking\Helper\Data;
 use Magento\Framework\App\RequestInterface;
@@ -36,7 +36,7 @@ class Service implements TapbuyServiceInterface
     private $json;
 
     /**
-     * @var LoggerInterface
+     * @var TapbuyLogger
      */
     private $logger;
 
@@ -61,7 +61,7 @@ class Service implements TapbuyServiceInterface
      * @param Config $config
      * @param Curl $curl
      * @param Json $json
-     * @param LoggerInterface $logger
+     * @param TapbuyLogger $logger
      * @param Data $helper
      * @param RequestInterface $request
      * @param UrlInterface $urlBuilder
@@ -70,7 +70,7 @@ class Service implements TapbuyServiceInterface
         Config $config,
         Curl $curl,
         Json $json,
-        LoggerInterface $logger,
+        TapbuyLogger $logger,
         Data $helper,
         RequestInterface $request,
         UrlInterface $urlBuilder
@@ -129,13 +129,9 @@ class Service implements TapbuyServiceInterface
 
             return false;
         } catch (\Exception $e) {
-            $this->logger->error(
-                'Error sending Tapbuy API request: ' . $e->getMessage(),
-                [
-                    'endpoint' => $endpoint,
-                    'exception' => $e->getTraceAsString()
-                ]
-            );
+            $this->logger->logException('Error sending Tapbuy API request', $e, [
+                'endpoint' => $endpoint,
+            ]);
 
             return false;
         }
@@ -168,7 +164,9 @@ class Service implements TapbuyServiceInterface
 
             return $this->sendRequest('/ab-test/transaction', $payload);
         } catch (\Exception $e) {
-            $this->logger->error('Error sending transaction to Tapbuy: ' . $e->getMessage());
+            $this->logger->logException('Error sending transaction to Tapbuy', $e, [
+                'order_id' => $order->getIncrementId(),
+            ]);
             return false;
         }
     }
@@ -214,7 +212,7 @@ class Service implements TapbuyServiceInterface
             $this->helper->removeABTestIdCookie();
             return ['redirect' => false];
         } catch (\Exception $e) {
-            $this->logger->error('Error triggering A/B test: ' . $e->getMessage());
+            $this->logger->logException('Error triggering A/B test', $e);
             $this->helper->removeABTestIdCookie();
             return ['redirect' => false];
         }

@@ -333,7 +333,7 @@ class Data extends AbstractHelper
      */
     public function getStoreCookies()
     {
-        $cookiePrefixes = ['PHPSESSID', 'form_key', 'mage-cache-', 'mage-messages'];
+        $cookiePrefixes = ['mage-cache-', 'mage-messages'];
 
         foreach ($_COOKIE as $name => $value) {
             foreach ($cookiePrefixes as $prefix) {

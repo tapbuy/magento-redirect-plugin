@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- FetchAndClearLogs Resolver -->
+    <type name="Tapbuy\RedirectTracking\Model\Resolver\FetchAndClearLogs">
+        <arguments>
+            <argument name="tokenAuthorization" xsi:type="object">Tapbuy\RedirectTracking\Model\Authorization\TokenAuthorization</argument>
+            <argument name="logHandler" xsi:type="object">Tapbuy\RedirectTracking\Logger\Handler</argument>
+        </arguments>
+    </type>
+
+    <!-- ConfirmOrder Resolver -->
+    <type name="Tapbuy\RedirectTracking\Model\Resolver\ConfirmOrder">
+        <arguments>
+            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\TapbuyLogger</argument>
+            <argument name="paymentRepository" xsi:type="object">Magento\Sales\Api\OrderPaymentRepositoryInterface</argument>
+        </arguments>
+    </type>
+</config>
