@@ -15,7 +15,8 @@ namespace Tapbuy\RedirectTracking\Api;
 class TapbuyConstants
 {
     /**
-     * HTTP Header used to identify requests from Tapbuy API.
+     * HTTP header used to identify requests originating from the Tapbuy checkout
+     * (as opposed to generic API-key-authenticated API requests).
      */
     public const HTTP_HEADER_TAPBUY_CALL = 'X-Tapbuy-Call';
 
