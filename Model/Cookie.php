@@ -16,7 +16,6 @@ use Tapbuy\RedirectTracking\Api\CookieInterface;
 
 class Cookie implements CookieInterface
 {
-
     /**
      * @var CookieManagerInterface
      */
