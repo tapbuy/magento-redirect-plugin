@@ -9,6 +9,7 @@
 
 namespace Tapbuy\RedirectTracking\Model;
 
+use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
 use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
 use Tapbuy\RedirectTracking\Model\Config;
 use Tapbuy\RedirectTracking\Model\Service;
@@ -38,23 +39,31 @@ class ABTest
     private $logger;
 
     /**
+     * @var TapbuyRequestDetectorInterface
+     */
+    private $requestDetector;
+
+    /**
      * ABTest constructor.
      *
      * @param Config $config
      * @param Service $service
      * @param Data $helper
      * @param TapbuyLogger $logger
+     * @param TapbuyRequestDetectorInterface $requestDetector
      */
     public function __construct(
         Config $config,
         Service $service,
         Data $helper,
         TapbuyLogger $logger,
+        TapbuyRequestDetectorInterface $requestDetector
     ) {
         $this->config = $config;
         $this->service = $service;
         $this->helper = $helper;
         $this->logger = $logger;
+        $this->requestDetector = $requestDetector;
     }
 
     /**
@@ -67,7 +76,7 @@ class ABTest
     public function processOrderTransaction($order, $abTestId = null)
     {
         // Skip if Tapbuy is disabled or it's a Tapbuy API request
-        if (!$this->config->isEnabled() || $this->helper->isTapbuyApiRequest()) {
+        if (!$this->config->isEnabled() || $this->requestDetector->isTapbuyApiRequest()) {
             return;
         }
 

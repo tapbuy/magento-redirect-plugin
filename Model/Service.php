@@ -11,6 +11,7 @@ namespace Tapbuy\RedirectTracking\Model;
 
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Serialize\Serializer\Json;
+use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
 use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
 use Tapbuy\RedirectTracking\Api\TapbuyServiceInterface;
 use Tapbuy\RedirectTracking\Helper\Data;
@@ -56,6 +57,11 @@ class Service implements TapbuyServiceInterface
     private $urlBuilder;
 
     /**
+     * @var TapbuyRequestDetectorInterface
+     */
+    private $requestDetector;
+
+    /**
      * Service constructor.
      *
      * @param Config $config
@@ -65,6 +71,7 @@ class Service implements TapbuyServiceInterface
      * @param Data $helper
      * @param RequestInterface $request
      * @param UrlInterface $urlBuilder
+     * @param TapbuyRequestDetectorInterface $requestDetector
      */
     public function __construct(
         Config $config,
@@ -73,7 +80,8 @@ class Service implements TapbuyServiceInterface
         TapbuyLogger $logger,
         Data $helper,
         RequestInterface $request,
-        UrlInterface $urlBuilder
+        UrlInterface $urlBuilder,
+        TapbuyRequestDetectorInterface $requestDetector
     ) {
         $this->config = $config;
         $this->curl = $curl;
@@ -82,6 +90,7 @@ class Service implements TapbuyServiceInterface
         $this->helper = $helper;
         $this->request = $request;
         $this->urlBuilder = $urlBuilder;
+        $this->requestDetector = $requestDetector;
     }
 
     /**
@@ -146,7 +155,7 @@ class Service implements TapbuyServiceInterface
      */
     public function sendTransactionForOrder($order, $abTestId = null)
     {
-        if (!$this->config->isEnabled() || $this->helper->isTapbuyApiRequest()) {
+        if (!$this->config->isEnabled() || $this->requestDetector->isTapbuyApiRequest()) {
             return false;
         }
 
@@ -178,7 +187,7 @@ class Service implements TapbuyServiceInterface
      */
     public function triggerABTest($quote, $forceRedirect = null, $referer = null)
     {
-        if (!$this->config->isEnabled() || $this->helper->isTapbuyApiRequest()) {
+        if (!$this->config->isEnabled() || $this->requestDetector->isTapbuyApiRequest()) {
             return ['redirect' => false];
         }
 

@@ -7,6 +7,9 @@
     <preference for="Tapbuy\RedirectTracking\Api\TapbuyServiceInterface"
                 type="Tapbuy\RedirectTracking\Model\Service"/>
 
+    <preference for="Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface"
+                type="Tapbuy\RedirectTracking\Model\TapbuyRequestDetector"/>
+
     <!-- Tapbuy Centralized Logger Configuration -->
     <virtualType name="Tapbuy\RedirectTracking\Logger\VirtualLogger" type="Magento\Framework\Logger\Monolog">
         <arguments>

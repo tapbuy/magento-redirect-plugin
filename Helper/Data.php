@@ -150,17 +150,6 @@ class Data extends AbstractHelper
     }
 
     /**
-     * Check if the request is from Tapbuy API
-     *
-     * @return bool
-     */
-    public function isTapbuyApiRequest()
-    {
-        $apiKey = $this->config->getApiKey();
-        return $apiKey && $this->request->getHeader('x-tapbuy-key') === $apiKey;
-    }
-
-    /**
      * Get current path with query string
      *
      * @return string
