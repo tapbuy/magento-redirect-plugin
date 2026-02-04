@@ -21,14 +21,15 @@ use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\Stdlib\CookieManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use Tapbuy\RedirectTracking\Model\Config;
-use Tapbuy\RedirectTracking\Model\Cookie;
+use Tapbuy\RedirectTracking\Api\ConfigInterface;
+use Tapbuy\RedirectTracking\Api\CookieInterface;
+use Tapbuy\RedirectTracking\Api\DataHelperInterface;
 use Psr\Log\LoggerInterface;
 
-class Data extends AbstractHelper
+class Data extends AbstractHelper implements DataHelperInterface
 {
     /**
-     * @var Config
+     * @var ConfigInterface
      */
     private $config;
 
@@ -38,7 +39,7 @@ class Data extends AbstractHelper
     private $cookieManager;
 
     /**
-     * @var Cookie
+     * @var CookieInterface
      */
     private $cookie;
 
@@ -106,9 +107,9 @@ class Data extends AbstractHelper
      * Data constructor.
      *
      * @param Context $context
-     * @param Config $config
+     * @param ConfigInterface $config
      * @param CookieManagerInterface $cookieManager
-     * @param Cookie $cookie
+     * @param CookieInterface $cookie
      * @param EncryptorInterface $encryptor
      * @param Json $json
      * @param Resolver $localeResolver
@@ -121,9 +122,9 @@ class Data extends AbstractHelper
      */
     public function __construct(
         Context $context,
-        Config $config,
+        ConfigInterface $config,
         CookieManagerInterface $cookieManager,
-        Cookie $cookie,
+        CookieInterface $cookie,
         EncryptorInterface $encryptor,
         Json $json,
         Resolver $localeResolver,
@@ -210,7 +211,7 @@ class Data extends AbstractHelper
         $cookie = $this->cookie->getABTestId();
 
         if (!$cookie) {
-            $cookie = $this->getCookie(Cookie::COOKIE_NAME_ABTEST_ID);
+            $cookie = $this->getCookie(CookieInterface::COOKIE_NAME_ABTEST_ID);
         }
 
         return $cookie ?? null;

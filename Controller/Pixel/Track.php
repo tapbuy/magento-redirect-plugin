@@ -14,8 +14,8 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\Result\Raw;
 use Magento\Framework\Controller\Result\RawFactory;
-use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
-use Tapbuy\RedirectTracking\Helper\Data;
+use Tapbuy\RedirectTracking\Api\DataHelperInterface;
+use Tapbuy\RedirectTracking\Api\LoggerInterface;
 
 class Track implements HttpGetActionInterface
 {
@@ -30,12 +30,12 @@ class Track implements HttpGetActionInterface
     private $rawFactory;
 
     /**
-     * @var Data
+     * @var DataHelperInterface
      */
     private $helper;
 
     /**
-     * @var TapbuyLogger
+     * @var LoggerInterface
      */
     private $logger;
 
@@ -44,14 +44,14 @@ class Track implements HttpGetActionInterface
      *
      * @param RequestInterface $request
      * @param RawFactory $rawFactory
-     * @param Data $helper
-     * @param TapbuyLogger $logger
+     * @param DataHelperInterface $helper
+     * @param LoggerInterface $logger
      */
     public function __construct(
         RequestInterface $request,
         RawFactory $rawFactory,
-        Data $helper,
-        TapbuyLogger $logger
+        DataHelperInterface $helper,
+        LoggerInterface $logger
     ) {
         $this->request = $request;
         $this->rawFactory = $rawFactory;

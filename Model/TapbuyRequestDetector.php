@@ -12,6 +12,7 @@
 namespace Tapbuy\RedirectTracking\Model;
 
 use Magento\Framework\App\RequestInterface;
+use Tapbuy\RedirectTracking\Api\ConfigInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyConstants;
 use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
 
@@ -23,17 +24,17 @@ class TapbuyRequestDetector implements TapbuyRequestDetectorInterface
     private RequestInterface $request;
 
     /**
-     * @var Config
+     * @var ConfigInterface
      */
-    private Config $config;
+    private ConfigInterface $config;
 
     /**
      * @param RequestInterface $request
-     * @param Config $config
+     * @param ConfigInterface $config
      */
     public function __construct(
         RequestInterface $request,
-        Config $config
+        ConfigInterface $config
     ) {
         $this->request = $request;
         $this->config = $config;

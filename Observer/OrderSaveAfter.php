@@ -10,38 +10,38 @@ namespace Tapbuy\RedirectTracking\Observer;
 
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
-use Tapbuy\RedirectTracking\Model\ABTest;
-use Tapbuy\RedirectTracking\Model\Config;
+use Tapbuy\RedirectTracking\Api\ABTestInterface;
+use Tapbuy\RedirectTracking\Api\ConfigInterface;
+use Tapbuy\RedirectTracking\Api\LoggerInterface;
 
 class OrderSaveAfter implements ObserverInterface
 {
     /**
-     * @var Config
+     * @var ConfigInterface
      */
     private $config;
 
     /**
-     * @var ABTest
+     * @var ABTestInterface
      */
     private $abTest;
 
     /**
-     * @var TapbuyLogger
+     * @var LoggerInterface
      */
     private $logger;
 
     /**
      * OrderSaveAfter constructor.
      *
-     * @param Config $config
-     * @param ABTest $abTest
-     * @param TapbuyLogger $logger
+     * @param ConfigInterface $config
+     * @param ABTestInterface $abTest
+     * @param LoggerInterface $logger
      */
     public function __construct(
-        Config $config,
-        ABTest $abTest,
-        TapbuyLogger $logger
+        ConfigInterface $config,
+        ABTestInterface $abTest,
+        LoggerInterface $logger
     ) {
         $this->config = $config;
         $this->abTest = $abTest;

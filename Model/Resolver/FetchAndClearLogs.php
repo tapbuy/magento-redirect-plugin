@@ -12,34 +12,34 @@ namespace Tapbuy\RedirectTracking\Model\Resolver;
 use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Query\ResolverInterface;
 use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
+use Tapbuy\RedirectTracking\Api\Authorization\TokenAuthorizationInterface;
+use Tapbuy\RedirectTracking\Api\LogHandlerInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyConstants;
-use Tapbuy\RedirectTracking\Model\Authorization\TokenAuthorization;
-use Tapbuy\RedirectTracking\Logger\Handler as LogHandler;
 
 class FetchAndClearLogs implements ResolverInterface
 {
     /**
      * Required ACL resource for managing logs
      */
-    private const ACL_RESOURCE = TokenAuthorization::TAPBUY_LOGS;
+    private const ACL_RESOURCE = TokenAuthorizationInterface::TAPBUY_LOGS;
 
     /**
-     * @var TokenAuthorization
+     * @var TokenAuthorizationInterface
      */
     private $tokenAuthorization;
 
     /**
-     * @var LogHandler
+     * @var LogHandlerInterface
      */
     private $logHandler;
 
     /**
-     * @param TokenAuthorization $tokenAuthorization
-     * @param LogHandler $logHandler
+     * @param TokenAuthorizationInterface $tokenAuthorization
+     * @param LogHandlerInterface $logHandler
      */
     public function __construct(
-        TokenAuthorization $tokenAuthorization,
-        LogHandler $logHandler
+        TokenAuthorizationInterface $tokenAuthorization,
+        LogHandlerInterface $logHandler
     ) {
         $this->tokenAuthorization = $tokenAuthorization;
         $this->logHandler = $logHandler;

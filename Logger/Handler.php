@@ -17,9 +17,10 @@ use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
 use Monolog\LogRecord;
+use Tapbuy\RedirectTracking\Api\LogHandlerInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyConstants;
 
-class Handler extends RotatingFileHandler
+class Handler extends RotatingFileHandler implements LogHandlerInterface
 {
     /**
      * @var string

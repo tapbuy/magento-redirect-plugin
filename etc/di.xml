@@ -10,6 +10,27 @@
     <preference for="Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface"
                 type="Tapbuy\RedirectTracking\Model\TapbuyRequestDetector"/>
 
+    <preference for="Tapbuy\RedirectTracking\Api\ConfigInterface"
+                type="Tapbuy\RedirectTracking\Model\Config"/>
+
+    <preference for="Tapbuy\RedirectTracking\Api\CookieInterface"
+                type="Tapbuy\RedirectTracking\Model\Cookie"/>
+
+    <preference for="Tapbuy\RedirectTracking\Api\DataHelperInterface"
+                type="Tapbuy\RedirectTracking\Helper\Data"/>
+
+    <preference for="Tapbuy\RedirectTracking\Api\ABTestInterface"
+                type="Tapbuy\RedirectTracking\Model\ABTest"/>
+
+    <preference for="Tapbuy\RedirectTracking\Api\LoggerInterface"
+                type="Tapbuy\RedirectTracking\Logger\TapbuyLogger"/>
+
+    <preference for="Tapbuy\RedirectTracking\Api\LogHandlerInterface"
+                type="Tapbuy\RedirectTracking\Logger\Handler"/>
+
+    <preference for="Tapbuy\RedirectTracking\Api\Authorization\TokenAuthorizationInterface"
+                type="Tapbuy\RedirectTracking\Model\Authorization\TokenAuthorization"/>
+
     <!-- Tapbuy Centralized Logger Configuration -->
     <virtualType name="Tapbuy\RedirectTracking\Logger\VirtualLogger" type="Magento\Framework\Logger\Monolog">
         <arguments>

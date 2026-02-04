@@ -9,32 +9,33 @@
 
 namespace Tapbuy\RedirectTracking\Model;
 
+use Tapbuy\RedirectTracking\Api\ABTestInterface;
+use Tapbuy\RedirectTracking\Api\ConfigInterface;
+use Tapbuy\RedirectTracking\Api\DataHelperInterface;
+use Tapbuy\RedirectTracking\Api\LoggerInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
-use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
-use Tapbuy\RedirectTracking\Model\Config;
-use Tapbuy\RedirectTracking\Model\Service;
-use Tapbuy\RedirectTracking\Helper\Data;
+use Tapbuy\RedirectTracking\Api\TapbuyServiceInterface;
 use Magento\Sales\Model\Order;
 
-class ABTest
+class ABTest implements ABTestInterface
 {
     /**
-     * @var Config
+     * @var ConfigInterface
      */
     private $config;
 
     /**
-     * @var Service
+     * @var TapbuyServiceInterface
      */
     private $service;
 
     /**
-     * @var Data
+     * @var DataHelperInterface
      */
     private $helper;
 
     /**
-     * @var TapbuyLogger
+     * @var LoggerInterface
      */
     private $logger;
 
@@ -46,17 +47,17 @@ class ABTest
     /**
      * ABTest constructor.
      *
-     * @param Config $config
-     * @param Service $service
-     * @param Data $helper
-     * @param TapbuyLogger $logger
+     * @param ConfigInterface $config
+     * @param TapbuyServiceInterface $service
+     * @param DataHelperInterface $helper
+     * @param LoggerInterface $logger
      * @param TapbuyRequestDetectorInterface $requestDetector
      */
     public function __construct(
-        Config $config,
-        Service $service,
-        Data $helper,
-        TapbuyLogger $logger,
+        ConfigInterface $config,
+        TapbuyServiceInterface $service,
+        DataHelperInterface $helper,
+        LoggerInterface $logger,
         TapbuyRequestDetectorInterface $requestDetector
     ) {
         $this->config = $config;
