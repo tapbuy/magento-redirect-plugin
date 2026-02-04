@@ -6,9 +6,9 @@ use Magento\Framework\GraphQl\Query\ResolverInterface;
 use Magento\Framework\GraphQl\Query\Resolver\ContextInterface;
 use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
-use Tapbuy\RedirectTracking\Model\Service;
-use Tapbuy\RedirectTracking\Model\Config;
-use Tapbuy\RedirectTracking\Helper\Data;
+use Tapbuy\RedirectTracking\Api\ConfigInterface;
+use Tapbuy\RedirectTracking\Api\DataHelperInterface;
+use Tapbuy\RedirectTracking\Api\TapbuyServiceInterface;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Framework\Exception\LocalizedException;
@@ -17,17 +17,17 @@ use Magento\Framework\Phrase;
 class Redirect implements ResolverInterface
 {
     /**
-     * @var Service
+     * @var TapbuyServiceInterface
      */
     protected $service;
 
     /**
-     * @var Config
+     * @var ConfigInterface
      */
     protected $config;
 
     /**
-     * @var Data
+     * @var DataHelperInterface
      */
     protected $helper;
 
@@ -46,16 +46,16 @@ class Redirect implements ResolverInterface
      *
      * Initializes the Redirect resolver with required dependencies.
      *
-     * @param Service $service
-     * @param Config $config
-     * @param Data $helper
+     * @param TapbuyServiceInterface $service
+     * @param ConfigInterface $config
+     * @param DataHelperInterface $helper
      * @param QuoteFactory $quoteFactory
      * @param QuoteIdMaskFactory $quoteIdMaskFactory
      */
     public function __construct(
-        Service $service,
-        Config $config,
-        Data $helper,
+        TapbuyServiceInterface $service,
+        ConfigInterface $config,
+        DataHelperInterface $helper,
         QuoteFactory $quoteFactory,
         QuoteIdMaskFactory $quoteIdMaskFactory
     ) {

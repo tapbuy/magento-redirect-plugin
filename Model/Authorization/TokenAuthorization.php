@@ -19,27 +19,10 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\GraphQl\Exception\GraphQlAuthorizationException;
 use Magento\Integration\Model\Oauth\TokenFactory;
 use Magento\Integration\Model\IntegrationService;
+use Tapbuy\RedirectTracking\Api\Authorization\TokenAuthorizationInterface;
 
-class TokenAuthorization
+class TokenAuthorization implements TokenAuthorizationInterface
 {
-    /**
-     * Tapbuy super-admin resource - grants access to all Tapbuy resources
-     */
-    public const TAPBUY_SUPER_ADMIN = 'Tapbuy_RedirectTracking::tapbuy';
-
-    /**
-     * Tapbuy ACL Resources
-     */
-    public const TAPBUY_ORDER_VIEW = 'Tapbuy_RedirectTracking::order_view';
-    public const TAPBUY_ORDER_EDIT = 'Tapbuy_RedirectTracking::order_edit';
-    public const TAPBUY_ORDER_ASSIGN = 'Tapbuy_RedirectTracking::order_assign';
-    public const TAPBUY_CART_UNLOCK = 'Tapbuy_RedirectTracking::cart_unlock';
-    public const TAPBUY_CART_DEACTIVATE = 'Tapbuy_RedirectTracking::cart_deactivate';
-    public const TAPBUY_CUSTOMER_SEARCH = 'Tapbuy_RedirectTracking::customer_search';
-    public const TAPBUY_CUSTOMER_VIEW = 'Tapbuy_RedirectTracking::customer_view';
-    public const TAPBUY_MODULES_VERSIONS = 'Tapbuy_RedirectTracking::modules_versions';
-    public const TAPBUY_LOGS = 'Tapbuy_RedirectTracking::logs';
-
     /**
      * Mapping of Tapbuy resources to legacy Magento resources for backward compatibility.
      * During the transition period, either the Tapbuy resource OR the legacy resource will grant access.

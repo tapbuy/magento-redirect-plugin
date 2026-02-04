@@ -10,9 +10,10 @@
 namespace Tapbuy\RedirectTracking\Logger;
 
 use Monolog\Logger;
+use Tapbuy\RedirectTracking\Api\LoggerInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyConstants;
 
-class TapbuyLogger extends Logger
+class TapbuyLogger extends Logger implements LoggerInterface
 {
     /**
      * TapbuyLogger constructor.

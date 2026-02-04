@@ -12,8 +12,9 @@ namespace Tapbuy\RedirectTracking\Model;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Store\Model\ScopeInterface;
+use Tapbuy\RedirectTracking\Api\ConfigInterface;
 
-class Config
+class Config implements ConfigInterface
 {
     public const XML_PATH_ENABLED = 'tapbuy/general/enabled';
     public const XML_PATH_MOBILE_REDIRECT_ENABLED = 'tapbuy/general/mobile_redirection_enabled';

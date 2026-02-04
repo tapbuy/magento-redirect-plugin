@@ -9,9 +9,9 @@ use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
 use Magento\Framework\GraphQl\Exception\GraphQlInputException;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Sales\Api\OrderPaymentRepositoryInterface;
+use Tapbuy\RedirectTracking\Api\ABTestInterface;
+use Tapbuy\RedirectTracking\Api\LoggerInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyConstants;
-use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
-use Tapbuy\RedirectTracking\Model\ABTest;
 
 class ConfirmOrder implements ResolverInterface
 {
@@ -23,12 +23,12 @@ class ConfirmOrder implements ResolverInterface
     private $orderFactory;
 
     /**
-     * @var ABTest
+     * @var ABTestInterface
      */
     private $abTest;
 
     /**
-     * @var TapbuyLogger
+     * @var LoggerInterface
      */
     private $logger;
 
@@ -41,14 +41,14 @@ class ConfirmOrder implements ResolverInterface
      * ConfirmOrder constructor.
      *
      * @param OrderFactory $orderFactory
-     * @param ABTest $abTest
-     * @param TapbuyLogger $logger
+     * @param ABTestInterface $abTest
+     * @param LoggerInterface $logger
      * @param OrderPaymentRepositoryInterface $paymentRepository
      */
     public function __construct(
         OrderFactory $orderFactory,
-        ABTest $abTest,
-        TapbuyLogger $logger,
+        ABTestInterface $abTest,
+        LoggerInterface $logger,
         OrderPaymentRepositoryInterface $paymentRepository
     ) {
         $this->orderFactory = $orderFactory;
