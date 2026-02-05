@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 namespace Tapbuy\RedirectTracking\Model\Config\Source;
 
 use Magento\Framework\Data\OptionSourceInterface;

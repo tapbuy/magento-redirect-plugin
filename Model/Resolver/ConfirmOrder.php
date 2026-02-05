@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tapbuy\RedirectTracking\Model\Resolver;
 
 use Magento\Framework\GraphQl\Query\ResolverInterface;
