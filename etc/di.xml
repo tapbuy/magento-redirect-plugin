@@ -67,9 +67,49 @@
         </arguments>
     </type>
 
+    <!-- Cookie Service -->
+    <type name="Tapbuy\RedirectTracking\Service\CookieService">
+        <arguments>
+            <argument name="cookieManager" xsi:type="object">Magento\Framework\Stdlib\CookieManagerInterface</argument>
+            <argument name="cookie" xsi:type="object">Tapbuy\RedirectTracking\Api\CookieInterface</argument>
+            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\TapbuyLogger</argument>
+        </arguments>
+    </type>
+
+    <!-- Encryption Service -->
+    <type name="Tapbuy\RedirectTracking\Service\EncryptionService">
+        <arguments>
+            <argument name="config" xsi:type="object">Tapbuy\RedirectTracking\Api\ConfigInterface</argument>
+            <argument name="request" xsi:type="object">Magento\Framework\App\RequestInterface</argument>
+            <argument name="json" xsi:type="object">Magento\Framework\Serialize\Serializer\Json</argument>
+            <argument name="quoteIdMaskFactory" xsi:type="object">Magento\Quote\Model\QuoteIdMaskFactory</argument>
+        </arguments>
+    </type>
+
+    <!-- Locale Service -->
+    <type name="Tapbuy\RedirectTracking\Service\LocaleService">
+        <arguments>
+            <argument name="localeResolver" xsi:type="object">Magento\Framework\Locale\Resolver</argument>
+            <argument name="config" xsi:type="object">Tapbuy\RedirectTracking\Api\ConfigInterface</argument>
+        </arguments>
+    </type>
+
+    <!-- Pixel Service -->
+    <type name="Tapbuy\RedirectTracking\Service\PixelService">
+        <arguments>
+            <argument name="storeManager" xsi:type="object">Magento\Store\Model\StoreManagerInterface</argument>
+        </arguments>
+    </type>
+
+    <!-- Data Helper with Service Dependencies -->
     <type name="Tapbuy\RedirectTracking\Helper\Data">
         <arguments>
-            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\TapbuyLogger</argument>
+            <argument name="cookieService" xsi:type="object">Tapbuy\RedirectTracking\Service\CookieService</argument>
+            <argument name="encryptionService" xsi:type="object">Tapbuy\RedirectTracking\Service\EncryptionService</argument>
+            <argument name="localeService" xsi:type="object">Tapbuy\RedirectTracking\Service\LocaleService</argument>
+            <argument name="pixelService" xsi:type="object">Tapbuy\RedirectTracking\Service\PixelService</argument>
+            <argument name="httpHeader" xsi:type="object">Magento\Framework\HTTP\Header</argument>
+            <argument name="request" xsi:type="object">Magento\Framework\App\RequestInterface</argument>
         </arguments>
     </type>
 
