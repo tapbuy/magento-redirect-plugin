@@ -123,7 +123,8 @@ class CookieService
     /**
      * Retrieves the value of a cookie by its name.
      *
-     * Wildcard matching is supported by prefixing the name with '*'.
+     * Prefix matching is performed when the name does not start with '*'.
+     * If the name starts with '*', no prefix matching is performed and an exact lookup is used.
      *
      * @param string $name The name of the cookie to retrieve.
      * @return string|null The value of the cookie if it exists, or null otherwise.
