@@ -117,14 +117,14 @@ class EncryptionService
     {
         // Ensure key is 32 bytes for AES-256
         $encryptionKey = substr(str_pad($encryptionKey, 32, "\0"), 0, 32);
-        $iv = random_bytes(12); // 12-byte nonce for GCM
+        $initVector = random_bytes(12); // 12-byte nonce for GCM
         $tag = '';
-        $cipherText = openssl_encrypt($jsonData, 'aes-256-gcm', $encryptionKey, OPENSSL_RAW_DATA, $iv, $tag);
+        $cipherText = openssl_encrypt($jsonData, 'aes-256-gcm', $encryptionKey, OPENSSL_RAW_DATA, $initVector, $tag);
 
         if ($cipherText === false) {
             return '';
         }
 
-        return base64_encode($iv . $tag . $cipherText);
+        return base64_encode($initVector . $tag . $cipherText);
     }
 }

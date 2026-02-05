@@ -77,32 +77,24 @@ class Handler extends RotatingFileHandler implements LogHandlerInterface
     protected function write(array|LogRecord $record): void
     {
         // Normalize record for both Monolog 2.x (array) and 3.x (LogRecord)
-        if ($record instanceof LogRecord) {
-            $context = $record->context;
-        } else {
-            $context = $record['context'] ?? [];
-        }
+        $isLogRecord = $record instanceof LogRecord;
+        $context = $isLogRecord ? $record->context : ($record['context'] ?? []);
 
         // Add stacktrace if not already present and we're logging an error
         if (!isset($context['stacktrace']) && !isset($context['exception']['stacktrace'])) {
-            if ($record instanceof LogRecord) {
-                $level = $record->level->value;
-            } else {
-                $level = $record['level'];
-            }
+            $level = $isLogRecord ? $record->level->value : $record['level'];
 
             // For errors and above, capture current stacktrace
             if ($level >= Logger::ERROR) {
                 $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15);
                 // Remove logger internal calls
                 $backtrace = array_slice($backtrace, 4);
+                $stacktrace = $this->formatStacktrace($backtrace);
 
-                if ($record instanceof LogRecord) {
-                    $record = $record->with(context: array_merge($context, [
-                        'stacktrace' => $this->formatStacktrace($backtrace)
-                    ]));
+                if ($isLogRecord) {
+                    $record = $record->with(context: array_merge($context, ['stacktrace' => $stacktrace]));
                 } else {
-                    $record['context']['stacktrace'] = $this->formatStacktrace($backtrace);
+                    $record['context']['stacktrace'] = $stacktrace;
                 }
             }
         }

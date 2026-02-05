@@ -118,8 +118,8 @@ class FetchAndClearLogs implements ResolverInterface
         }
 
         // Sort by datetime descending (newest first)
-        usort($entries, function ($a, $b) {
-            return strtotime($b['datetime']) - strtotime($a['datetime']);
+        usort($entries, function ($first, $second) {
+            return strtotime($second['datetime']) - strtotime($first['datetime']);
         });
 
         // Apply limit if specified
