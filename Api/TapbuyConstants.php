@@ -28,6 +28,11 @@ class TapbuyConstants
     public const HTTP_HEADER_TAPBUY_KEY = 'x-tapbuy-key';
 
     /**
+     * HTTP Header used for trace ID correlation.
+     */
+    public const HTTP_HEADER_TAPBUY_TRACE_ID = 'X-Tapbuy-Trace-ID';
+
+    /**
      * Key used to store Tapbuy additional information in payment.
      */
     public const PAYMENT_ADDITIONAL_INFO_KEY = 'tapbuy';

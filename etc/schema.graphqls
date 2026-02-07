@@ -23,13 +23,14 @@ extend type Query {
 
 extend type Mutation {
     tapbuyConfirmOrder(input: TapbuyConfirmOrderInput!): Boolean @resolver(class: "Tapbuy\\RedirectTracking\\Model\\Resolver\\ConfirmOrder")
-    tapbuyFetchAndClearLogs(
+    tapbuyFetchLogs(
         limit: Int @doc(description: "Maximum number of log entries to return. If null, returns all logs.")
-    ): TapbuyFetchAndClearLogsOutput @resolver(class: "Tapbuy\\RedirectTracking\\Model\\Resolver\\FetchAndClearLogs") @doc(description: "Fetch all Tapbuy log entries and clear them from the log file. Requires integration token authorization.")
+        traceId: String @doc(description: "Optional trace ID to filter logs by specific request. If provided, returns only logs matching this trace ID.")
+    ): TapbuyFetchLogsOutput @resolver(class: "Tapbuy\\RedirectTracking\\Model\\Resolver\\FetchLogs") @doc(description: "Fetch Tapbuy log entries. Requires integration token authorization.")
 }
 
-type TapbuyFetchAndClearLogsOutput {
-    logs: [TapbuyLogEntry] @doc(description: "Array of log entries that were fetched and cleared")
+type TapbuyFetchLogsOutput {
+    logs: [TapbuyLogEntry] @doc(description: "Array of log entries that were fetched")
 }
 
 type TapbuyLogEntry {
@@ -38,7 +39,9 @@ type TapbuyLogEntry {
     level_name: String! @doc(description: "Human-readable log level name")
     context: String @doc(description: "JSON-encoded context data associated with the log entry")
     stacktrace: String @doc(description: "Stack trace if available, especially for errors and exceptions")
+    stacktrace_with_context: String @doc(description: "Enriched stack trace with source code context (pre_context, context_line, post_context) for each frame")
     error_details: String @doc(description: "JSON-encoded exception details if this log was from an exception")
     datetime: String! @doc(description: "ISO 8601 formatted datetime when the log was recorded")
     channel: String @doc(description: "Logger channel name")
+    trace_id: String @doc(description: "Tapbuy trace ID that correlates this log entry to a specific request from Tapbuy API")
 }

@@ -64,4 +64,26 @@ class TapbuyRequestDetector implements TapbuyRequestDetectorInterface
         $headerKey = $this->request->getHeader(TapbuyConstants::HTTP_HEADER_TAPBUY_KEY);
         return $headerKey === $apiKey;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getRequestUri(): string
+    {
+        return $this->request->getRequestUri();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getTraceId(): ?string
+    {
+        // Only return trace ID for Tapbuy-initiated requests
+        if (!$this->isTapbuyCall()) {
+            return null;
+        }
+
+        $traceId = $this->request->getHeader(TapbuyConstants::HTTP_HEADER_TAPBUY_TRACE_ID);
+        return (is_string($traceId) && !empty($traceId)) ? $traceId : null;
+    }
 }

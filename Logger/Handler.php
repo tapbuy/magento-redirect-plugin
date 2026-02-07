@@ -16,13 +16,13 @@ namespace Tapbuy\RedirectTracking\Logger;
 
 use Magento\Framework\Filesystem\DriverInterface;
 use Monolog\Formatter\JsonFormatter;
-use Monolog\Handler\RotatingFileHandler;
+use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Monolog\LogRecord;
 use Tapbuy\RedirectTracking\Api\LogHandlerInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyConstants;
 
-class Handler extends RotatingFileHandler implements LogHandlerInterface
+class Handler extends StreamHandler implements LogHandlerInterface
 {
     /**
      * @var string
@@ -30,24 +30,22 @@ class Handler extends RotatingFileHandler implements LogHandlerInterface
     protected const LOG_FILE = TapbuyConstants::LOG_FILE_NAME;
 
     /**
-     * @var int Maximum file size before rotation (5MB)
-     */
-    protected const MAX_FILES = 3;
-
-    /**
      * @var DriverInterface
      */
     protected $filesystem;
 
     /**
+     * @var string
+     */
+    protected $filePath;
+
+    /**
      * @param DriverInterface $filesystem
      * @param string|null $filePath
-     * @param int $maxFiles
      */
     public function __construct(
         DriverInterface $filesystem,
-        ?string $filePath = null,
-        int $maxFiles = self::MAX_FILES
+        ?string $filePath = null
     ) {
         $this->filesystem = $filesystem;
 
@@ -56,12 +54,12 @@ class Handler extends RotatingFileHandler implements LogHandlerInterface
             $filePath = BP . '/var/log/' . self::LOG_FILE;
         }
 
+        $this->filePath = $filePath;
+
+        // Initialize parent with file stream
         parent::__construct(
             $filePath,
-            $maxFiles,
-            Logger::DEBUG,
-            true,
-            0644
+            Logger::DEBUG
         );
 
         // Use JSON formatter for structured logging
@@ -82,11 +80,21 @@ class Handler extends RotatingFileHandler implements LogHandlerInterface
         $isLogRecord = $record instanceof LogRecord;
         $context = $isLogRecord ? $record->context : ($record['context'] ?? []);
 
+        // Handle enriched stacktrace with source code context (preferred)
+        if (isset($context['exception']['stacktrace_with_context']) && !isset($context['stacktrace_with_context'])) {
+            if ($isLogRecord) {
+                $context = array_merge($context, ['stacktrace_with_context' => $context['exception']['stacktrace_with_context']]);
+                $record = $record->with(context: $context);
+            } else {
+                $record['context']['stacktrace_with_context'] = $context['exception']['stacktrace_with_context'];
+            }
+        }
+
         // Add stacktrace if not already present and we're logging an error
         if (!isset($context['stacktrace']) && !isset($context['exception']['stacktrace'])) {
             $level = $isLogRecord ? $record->level->value : $record['level'];
 
-            // For errors and above, capture current stacktrace
+            // For errors and above, capture current stacktrace only as fallback
             if ($level >= Logger::ERROR) {
                 $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15);
                 // Remove logger internal calls
@@ -99,9 +107,34 @@ class Handler extends RotatingFileHandler implements LogHandlerInterface
                     $record['context']['stacktrace'] = $stacktrace;
                 }
             }
+        } elseif (isset($context['exception']['stacktrace']) && !isset($context['stacktrace'])) {
+            // Use exception stacktrace if available (preferred over debug_backtrace)
+            if ($isLogRecord) {
+                $record = $record->with(context: array_merge($context, ['stacktrace' => $context['exception']['stacktrace']]));
+            } else {
+                $record['context']['stacktrace'] = $context['exception']['stacktrace'];
+            }
         }
 
-        parent::write($record);
+        // Format the record using the formatter (JsonFormatter)
+        $formatted = '';
+        if ($this->getFormatter()) {
+            $formatted = $this->getFormatter()->format($record);
+        } else {
+            // Fallback: manually format as JSON if no formatter is set
+            $recordArray = $record instanceof LogRecord ? [
+                'timestamp' => $record->datetime->format('Y-m-d H:i:s'),
+                'level' => $record->level->name,
+                'message' => $record->message,
+                'context' => $record->context,
+            ] : $record;
+            $formatted = json_encode($recordArray) . "\n";
+        }
+
+        // Write directly to file
+        if ($formatted && !empty($this->filePath)) {
+            file_put_contents($this->filePath, $formatted, FILE_APPEND | LOCK_EX);
+        }
     }
 
     /**
@@ -132,21 +165,16 @@ class Handler extends RotatingFileHandler implements LogHandlerInterface
      */
     public function getLogFilePath(): string
     {
-        return BP . '/var/log/' . self::LOG_FILE;
+        return $this->filePath;
     }
 
     /**
-     * Get all log file paths (including rotated files)
+     * Get all log file paths (single file only)
      *
      * @return array
      */
     public function getAllLogFiles(): array
     {
-        $basePath = BP . '/var/log/';
-        // Use LOG_FILE constant to derive the pattern (replace .log with *.log for glob)
-        $pattern = $basePath . str_replace('.log', '*.log', self::LOG_FILE);
-
-        $files = glob($pattern);
-        return $files ?: [];
+        return file_exists($this->filePath) ? [$this->filePath] : [];
     }
 }
