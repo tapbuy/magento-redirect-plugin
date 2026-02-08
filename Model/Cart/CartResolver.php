@@ -102,12 +102,12 @@ class CartResolver implements CartResolverInterface
      * Converts masked or numeric cart IDs to their numeric form and retrieves
      * the complete cart object from the repository.
      *
-     * @param string $cartId The cart ID (masked or numeric)
+     * @param string|int $cartId The cart ID (masked or numeric)
      * @return CartInterface The loaded cart/quote entity
      * @throws \Magento\Framework\Exception\NoSuchEntityException If cart not found
      * @throws \Magento\Framework\Exception\InvalidArgumentException If masked ID is invalid
      */
-    public function resolveAndLoadQuote(string $cartId): CartInterface
+    public function resolveAndLoadQuote(string|int $cartId): CartInterface
     {
         $realCartId = $this->resolveCartId($cartId);
         return $this->cartRepository->get($realCartId);
@@ -119,7 +119,7 @@ class CartResolver implements CartResolverInterface
      * Accepts both masked quote IDs (typically used in GraphQL APIs) and
      * numeric quote IDs. Returns the numeric ID in both cases.
      *
-     * @param string $cartId The cart ID to resolve (masked or numeric)
+     * @param string|int $cartId The cart ID to resolve (masked or numeric)
      * @return int The numeric cart/quote ID
      * @throws \Magento\Framework\Exception\InvalidArgumentException If masked ID is invalid
      *
@@ -134,10 +134,14 @@ class CartResolver implements CartResolverInterface
      * // Result: 456 (or relevant numeric ID)
      * ```
      */
-    public function resolveCartId(string $cartId): int
+    public function resolveCartId(string|int $cartId): int
     {
-        // If already numeric, return as-is
-        if (is_numeric($cartId)) {
+        // Normalize int to string for consistent handling
+        $cartId = (string) $cartId;
+        
+        // If it's a pure numeric ID (only digits), return as-is
+        // Use ctype_digit to avoid false positives like "1e3", "+10", "10.0"
+        if (ctype_digit($cartId)) {
             return (int) $cartId;
         }
 

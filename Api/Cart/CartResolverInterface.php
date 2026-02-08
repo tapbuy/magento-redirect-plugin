@@ -56,7 +56,7 @@ interface CartResolverInterface
      * Accepts both masked quote IDs (typically used in GraphQL APIs) and
      * numeric quote IDs. Returns the numeric ID in both cases.
      *
-     * @param string $cartId The cart ID to resolve (masked or numeric)
+     * @param string|int $cartId The cart ID to resolve (masked or numeric)
      * @return int The numeric cart/quote ID
      * @throws \Magento\Framework\Exception\InvalidArgumentException If masked ID is invalid
      *
@@ -71,7 +71,7 @@ interface CartResolverInterface
      * // Result: 456 (or relevant numeric ID)
      * ```
      */
-    public function resolveCartId(string $cartId): int;
+    public function resolveCartId(string|int $cartId): int;
 
     /**
      * Resolve cart ID and load the corresponding cart/quote from repository.
@@ -79,12 +79,12 @@ interface CartResolverInterface
      * Converts masked or numeric cart IDs to their numeric form and retrieves
      * the complete cart object from the repository.
      *
-     * @param string $cartId The cart ID (masked or numeric)
+     * @param string|int $cartId The cart ID (masked or numeric)
      * @return CartInterface The loaded cart/quote entity
      * @throws \Magento\Framework\Exception\NoSuchEntityException If cart not found
      * @throws \Magento\Framework\Exception\InvalidArgumentException If masked ID is invalid
      */
-    public function resolveAndLoadQuote(string $cartId): CartInterface;
+    public function resolveAndLoadQuote(string|int $cartId): CartInterface;
 
     /**
      * Get the masked cart ID for a numeric cart/quote ID.
