@@ -198,6 +198,6 @@ class FetchLogs implements ResolverInterface
     private function extractTraceId(array $entry): ?string
     {
         $context = $entry['context'] ?? [];
-        return $context['x_tapbuy_trace_id'] ?? null;
+        return $context[TapbuyConstants::LOG_CONTEXT_TRACE_ID] ?? null;
     }
 }

@@ -19,6 +19,7 @@ namespace Tapbuy\RedirectTracking\Logger;
 
 use Monolog\LogRecord;
 use Monolog\Processor\ProcessorInterface;
+use Tapbuy\RedirectTracking\Api\TapbuyConstants;
 use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
 
 class TraceIdProcessor implements ProcessorInterface
@@ -62,11 +63,11 @@ class TraceIdProcessor implements ProcessorInterface
             if ($record instanceof LogRecord) {
                 // Monolog 3.x
                 $context = $record->context;
-                $context['x_tapbuy_trace_id'] = $this->traceId;
+                $context[TapbuyConstants::LOG_CONTEXT_TRACE_ID] = $this->traceId;
                 $record = $record->with(context: $context);
             } else {
                 // Monolog 2.x
-                $record['context']['x_tapbuy_trace_id'] = $this->traceId;
+                $record['context'][TapbuyConstants::LOG_CONTEXT_TRACE_ID] = $this->traceId;
             }
         }
 
