@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <!-- FetchAndClearLogs Resolver -->
-    <type name="Tapbuy\RedirectTracking\Model\Resolver\FetchAndClearLogs">
+    <!-- FetchLogs Resolver -->
+    <type name="Tapbuy\RedirectTracking\Model\Resolver\FetchLogs">
         <arguments>
             <argument name="tokenAuthorization" xsi:type="object">Tapbuy\RedirectTracking\Model\Authorization\TokenAuthorization</argument>
             <argument name="logHandler" xsi:type="object">Tapbuy\RedirectTracking\Logger\Handler</argument>

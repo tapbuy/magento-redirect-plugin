@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * GraphQL Resolver for fetching and clearing Tapbuy logs
+ * GraphQL Resolver for fetching Tapbuy logs
  *
  * @category  Tapbuy
  * @package   Tapbuy_RedirectTracking
@@ -18,7 +18,7 @@ use Tapbuy\RedirectTracking\Api\Authorization\TokenAuthorizationInterface;
 use Tapbuy\RedirectTracking\Api\LogHandlerInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyConstants;
 
-class FetchAndClearLogs implements ResolverInterface
+class FetchLogs implements ResolverInterface
 {
     /**
      * Required ACL resource for managing logs
@@ -61,18 +61,20 @@ class FetchAndClearLogs implements ResolverInterface
         $this->tokenAuthorization->authorize(self::ACL_RESOURCE);
 
         $limit = $args['limit'] ?? null;
-        $logs = $this->fetchAndClearLogs($limit);
+        $traceId = $args['traceId'] ?? null;
+        $logs = $this->fetchLogs($limit, $traceId);
 
         return ['logs' => $logs];
     }
 
     /**
-     * Read all log files, parse entries, clear files, and return entries
+     * Read all log files, parse entries, and return entries
      *
      * @param int|null $limit
+     * @param string|null $traceId
      * @return array
      */
-    private function fetchAndClearLogs(?int $limit): array
+    private function fetchLogs(?int $limit, ?string $traceId): array
     {
         $entries = [];
         $logFiles = $this->logHandler->getAllLogFiles();
@@ -82,14 +84,9 @@ class FetchAndClearLogs implements ResolverInterface
                 continue;
             }
 
-            // Use file locking to prevent race conditions
-            $handle = fopen($logFile, 'r+');
+            // Open in read-only mode
+            $handle = fopen($logFile, 'r');
             if (!$handle) {
-                continue;
-            }
-
-            if (!flock($handle, LOCK_EX)) {
-                fclose($handle);
                 continue;
             }
 
@@ -105,16 +102,18 @@ class FetchAndClearLogs implements ResolverInterface
                 foreach ($lines as $line) {
                     $entry = json_decode($line, true);
                     if ($entry && is_array($entry)) {
+                        // Filter by trace ID if provided
+                        if ($traceId !== null) {
+                            $entryTraceId = $this->extractTraceId($entry);
+                            if ($entryTraceId !== $traceId) {
+                                continue;
+                            }
+                        }
                         $entries[] = $this->formatLogEntry($entry);
                     }
                 }
 
-                // Truncate the file
-                ftruncate($handle, 0);
-                rewind($handle);
-
             } finally {
-                flock($handle, LOCK_UN);
                 fclose($handle);
             }
         }
@@ -146,8 +145,17 @@ class FetchAndClearLogs implements ResolverInterface
 
         // Extract stacktrace from context or exception
         $stacktrace = null;
+        $stacktraceWithContext = null;
         $context = $entry['context'] ?? [];
 
+        // Prefer stacktrace_with_context (enriched with source code)
+        if (isset($context['exception']['stacktrace_with_context'])) {
+            $stacktraceWithContext = $context['exception']['stacktrace_with_context'];
+        } elseif (isset($context['stacktrace_with_context'])) {
+            $stacktraceWithContext = $context['stacktrace_with_context'];
+        }
+
+        // Fall back to plain stacktrace
         if (isset($context['exception']['stacktrace'])) {
             $stacktrace = $context['exception']['stacktrace'];
         } elseif (isset($context['stacktrace'])) {
@@ -173,9 +181,23 @@ class FetchAndClearLogs implements ResolverInterface
             'level_name' => $levelName,
             'context' => json_encode($context),
             'stacktrace' => $stacktrace,
+            'stacktrace_with_context' => $stacktraceWithContext,
             'error_details' => $errorDetails ? json_encode($errorDetails) : null,
             'datetime' => $entry['datetime'] ?? date('c'),
             'channel' => $entry['channel'] ?? TapbuyConstants::LOGGER_CHANNEL_NAME,
+            'trace_id' => $this->extractTraceId($entry),
         ];
+    }
+
+    /**
+     * Extract trace ID from log entry context
+     *
+     * @param array $entry
+     * @return string|null
+     */
+    private function extractTraceId(array $entry): ?string
+    {
+        $context = $entry['context'] ?? [];
+        return $context[TapbuyConstants::LOG_CONTEXT_TRACE_ID] ?? null;
     }
 }

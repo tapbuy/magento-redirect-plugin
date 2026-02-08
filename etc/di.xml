@@ -32,11 +32,26 @@
                 type="Tapbuy\RedirectTracking\Model\Authorization\TokenAuthorization"/>
 
     <!-- Tapbuy Centralized Logger Configuration -->
+    <type name="Tapbuy\RedirectTracking\Logger\Handler">
+        <arguments>
+            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
+        </arguments>
+    </type>
+
+    <type name="Tapbuy\RedirectTracking\Logger\TraceIdProcessor">
+        <arguments>
+            <argument name="tapbuyRequestDetector" xsi:type="object">Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface</argument>
+        </arguments>
+    </type>
+
     <virtualType name="Tapbuy\RedirectTracking\Logger\VirtualLogger" type="Magento\Framework\Logger\Monolog">
         <arguments>
             <argument name="name" xsi:type="string">tapbuy</argument>
             <argument name="handlers" xsi:type="array">
                 <item name="tapbuy_handler" xsi:type="object">Tapbuy\RedirectTracking\Logger\Handler</item>
+            </argument>
+            <argument name="processors" xsi:type="array">
+                <item name="trace_id" xsi:type="object">Tapbuy\RedirectTracking\Logger\TraceIdProcessor</item>
             </argument>
         </arguments>
     </virtualType>
@@ -47,6 +62,9 @@
             <argument name="name" xsi:type="string">tapbuy</argument>
             <argument name="handlers" xsi:type="array">
                 <item name="tapbuy_handler" xsi:type="object">Tapbuy\RedirectTracking\Logger\Handler</item>
+            </argument>
+            <argument name="processors" xsi:type="array">
+                <item name="trace_id" xsi:type="object">Tapbuy\RedirectTracking\Logger\TraceIdProcessor</item>
             </argument>
         </arguments>
     </type>
@@ -129,5 +147,19 @@
         <arguments>
             <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\TapbuyLogger</argument>
         </arguments>
+    </type>
+
+    <!-- GraphQL Exception Logger Plugin -->
+    <type name="Tapbuy\RedirectTracking\Plugin\GraphQlExceptionLogger">
+        <arguments>
+            <argument name="tapbuyRequestDetector" xsi:type="object">Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface</argument>
+            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\TapbuyLogger</argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Framework\GraphQl\Query\ErrorHandler">
+        <plugin name="tapbuy_graphql_exception_logger"
+                type="Tapbuy\RedirectTracking\Plugin\GraphQlExceptionLogger"
+                sortOrder="10"/>
     </type>
 </config>

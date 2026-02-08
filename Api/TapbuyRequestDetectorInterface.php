@@ -32,4 +32,20 @@ interface TapbuyRequestDetectorInterface
      * @return bool
      */
     public function isTapbuyApiRequest(): bool;
+
+    /**
+     * Get the current request URI
+     *
+     * @return string
+     */
+    public function getRequestUri(): string;
+
+    /**
+     * Get the Tapbuy trace ID from request headers
+     *
+     * Only returns trace ID if this is a Tapbuy-initiated request.
+     *
+     * @return string|null
+     */
+    public function getTraceId(): ?string;
 }
