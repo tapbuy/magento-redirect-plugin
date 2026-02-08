@@ -9,10 +9,11 @@ use Magento\Framework\GraphQl\Query\Resolver\ContextInterface;
 use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
 use Magento\Framework\GraphQl\Exception\GraphQlInputException;
-use Magento\Sales\Model\OrderFactory;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\OrderPaymentRepositoryInterface;
 use Tapbuy\RedirectTracking\Api\ABTestInterface;
 use Tapbuy\RedirectTracking\Api\LoggerInterface;
+use Tapbuy\RedirectTracking\Api\Order\OrderLocatorInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyConstants;
 
 class ConfirmOrder implements ResolverInterface
@@ -20,9 +21,9 @@ class ConfirmOrder implements ResolverInterface
     private const TRACKING_FLAG = TapbuyConstants::ABTEST_TRACKING_FLAG;
 
     /**
-     * @var OrderFactory
+     * @var OrderLocatorInterface
      */
-    private $orderFactory;
+    private $orderLocator;
 
     /**
      * @var ABTestInterface
@@ -42,18 +43,18 @@ class ConfirmOrder implements ResolverInterface
     /**
      * ConfirmOrder constructor.
      *
-     * @param OrderFactory $orderFactory
+     * @param OrderLocatorInterface $orderLocator
      * @param ABTestInterface $abTest
      * @param LoggerInterface $logger
      * @param OrderPaymentRepositoryInterface $paymentRepository
      */
     public function __construct(
-        OrderFactory $orderFactory,
+        OrderLocatorInterface $orderLocator,
         ABTestInterface $abTest,
         LoggerInterface $logger,
         OrderPaymentRepositoryInterface $paymentRepository
     ) {
-        $this->orderFactory = $orderFactory;
+        $this->orderLocator = $orderLocator;
         $this->abTest = $abTest;
         $this->logger = $logger;
         $this->paymentRepository = $paymentRepository;
@@ -86,9 +87,12 @@ class ConfirmOrder implements ResolverInterface
                 throw new GraphQlInputException(__('Both order_number and ab_test_id are required.'));
             }
 
-            $order = $this->orderFactory->create()->loadByIncrementId($orderNumber);
-
-            if (!$order->getId()) {
+            try {
+                $order = $this->orderLocator->getByIdentifier(
+                    $orderNumber,
+                    OrderLocatorInterface::IDENTIFIER_TYPE_INCREMENT_ID
+                );
+            } catch (NoSuchEntityException $e) {
                 $this->logger->warning('ConfirmOrder: Order not found', [
                     'order_number' => $orderNumber,
                     'ab_test_id' => $abTestId,

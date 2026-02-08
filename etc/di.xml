@@ -31,6 +31,12 @@
     <preference for="Tapbuy\RedirectTracking\Api\Authorization\TokenAuthorizationInterface"
                 type="Tapbuy\RedirectTracking\Model\Authorization\TokenAuthorization"/>
 
+    <preference for="Tapbuy\RedirectTracking\Api\Cart\CartResolverInterface"
+                type="Tapbuy\RedirectTracking\Model\Cart\CartResolver"/>
+
+    <preference for="Tapbuy\RedirectTracking\Api\Order\OrderLocatorInterface"
+                type="Tapbuy\RedirectTracking\Model\Order\OrderLocator"/>
+
     <!-- Tapbuy Centralized Logger Configuration -->
     <type name="Tapbuy\RedirectTracking\Logger\Handler">
         <arguments>
@@ -100,7 +106,7 @@
             <argument name="config" xsi:type="object">Tapbuy\RedirectTracking\Api\ConfigInterface</argument>
             <argument name="request" xsi:type="object">Magento\Framework\App\RequestInterface</argument>
             <argument name="json" xsi:type="object">Magento\Framework\Serialize\Serializer\Json</argument>
-            <argument name="quoteIdMaskFactory" xsi:type="object">Magento\Quote\Model\QuoteIdMaskFactory</argument>
+            <argument name="cartResolver" xsi:type="object">Tapbuy\RedirectTracking\Api\Cart\CartResolverInterface</argument>
         </arguments>
     </type>
 

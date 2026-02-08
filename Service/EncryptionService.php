@@ -13,7 +13,7 @@ namespace Tapbuy\RedirectTracking\Service;
 
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Serialize\Serializer\Json;
-use Magento\Quote\Model\QuoteIdMaskFactory;
+use Tapbuy\RedirectTracking\Api\Cart\CartResolverInterface;
 use Tapbuy\RedirectTracking\Api\ConfigInterface;
 
 class EncryptionService
@@ -34,9 +34,9 @@ class EncryptionService
     private $json;
 
     /**
-     * @var QuoteIdMaskFactory
+     * @var CartResolverInterface
      */
-    private $quoteIdMaskFactory;
+    private $cartResolver;
 
     /**
      * EncryptionService constructor.
@@ -44,18 +44,18 @@ class EncryptionService
      * @param ConfigInterface $config
      * @param RequestInterface $request
      * @param Json $json
-     * @param QuoteIdMaskFactory $quoteIdMaskFactory
+     * @param CartResolverInterface $cartResolver
      */
     public function __construct(
         ConfigInterface $config,
         RequestInterface $request,
         Json $json,
-        QuoteIdMaskFactory $quoteIdMaskFactory
+        CartResolverInterface $cartResolver
     ) {
         $this->config = $config;
         $this->request = $request;
         $this->json = $json;
-        $this->quoteIdMaskFactory = $quoteIdMaskFactory;
+        $this->cartResolver = $cartResolver;
     }
 
     /**
@@ -100,9 +100,8 @@ class EncryptionService
 
         // Get cart data if available
         if ($quote && $quote->getId()) {
-            // Guest cart, retrieve masked ID
-            $quoteIdMask = $this->quoteIdMaskFactory->create()->load($quote->getId(), 'quote_id');
-            $data['cart_id'] = $quoteIdMask->getMaskedId();
+            // Guest cart, retrieve masked ID via centralized CartResolver
+            $data['cart_id'] = $this->cartResolver->getMaskedCartId((int) $quote->getId());
         }
 
         return $data;
