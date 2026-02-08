@@ -27,15 +27,33 @@ use Tapbuy\RedirectTracking\Api\Cart\CartResolverInterface;
  * Provides methods to convert masked quote IDs to their numeric equivalents,
  * load cart data from the repository and retrieve masked cart IDs.
  *
- * Example Usage:
+ * Example Usage (constructor injection):
  * ```php
- * $resolver = $this->cartResolverFactory->create();
- * // Load by masked ID
- * $cart = $resolver->resolveAndLoadQuote('masked-id-abc123');
- * // Or resolve just the ID
- * $cartId = $resolver->resolveCartId('masked-id-abc123');
- * // Or get the masked ID from a numeric ID
- * $maskedId = $resolver->getMaskedCartId(123);
+ * class SomeService
+ * {
+ *     /**
+ *      * @var \Tapbuy\RedirectTracking\Api\Cart\CartResolverInterface
+ *      */
+ *     private $cartResolver;
+ *
+ *     public function __construct(
+ *         \Tapbuy\RedirectTracking\Api\Cart\CartResolverInterface $cartResolver
+ *     ) {
+ *         $this->cartResolver = $cartResolver;
+ *     }
+ *
+ *     public function execute(): void
+ *     {
+ *         // Load by masked ID
+ *         $cart = $this->cartResolver->resolveAndLoadQuote('masked-id-abc123');
+ *
+ *         // Or resolve just the ID
+ *         $cartId = $this->cartResolver->resolveCartId('masked-id-abc123');
+ *
+ *         // Or get the masked ID from a numeric ID
+ *         $maskedId = $this->cartResolver->getMaskedCartId(123);
+ *     }
+ * }
  * ```
  */
 class CartResolver implements CartResolverInterface
