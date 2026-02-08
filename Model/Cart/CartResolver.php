@@ -31,9 +31,7 @@ use Tapbuy\RedirectTracking\Api\Cart\CartResolverInterface;
  * ```php
  * class SomeService
  * {
- *     /**
- *      * @var \Tapbuy\RedirectTracking\Api\Cart\CartResolverInterface
- *      */
+ *     // @var \Tapbuy\RedirectTracking\Api\Cart\CartResolverInterface
  *     private $cartResolver;
  *
  *     public function __construct(

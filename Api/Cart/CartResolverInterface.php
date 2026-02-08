@@ -23,15 +23,17 @@ use Magento\Quote\Api\Data\CartInterface;
  * Provides methods to convert masked quote IDs to their numeric equivalents,
  * load cart data from the repository and retrieve masked cart IDs.
  *
- * Example Usage:
+ * Example Usage (constructor injection):
  * ```php
- * use Tapbuy\RedirectTracking\Api\Cart\CartResolverInterface;
- *
  * class SomeService
  * {
+ *     // @var \Tapbuy\RedirectTracking\Api\Cart\CartResolverInterface
+ *     private $cartResolver;
+ *
  *     public function __construct(
- *         private readonly CartResolverInterface $cartResolver
+ *         \Tapbuy\RedirectTracking\Api\Cart\CartResolverInterface $cartResolver
  *     ) {
+ *         $this->cartResolver = $cartResolver;
  *     }
  *
  *     public function execute(): void
