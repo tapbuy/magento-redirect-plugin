@@ -25,13 +25,27 @@ use Magento\Quote\Api\Data\CartInterface;
  *
  * Example Usage:
  * ```php
- * $resolver = $this->cartResolverFactory->create();
- * // Load by masked ID
- * $cart = $resolver->resolveAndLoadQuote('masked-id-abc123');
- * // Or resolve just the ID
- * $cartId = $resolver->resolveCartId('masked-id-abc123');
- * // Or get the masked ID from a numeric ID
- * $maskedId = $resolver->getMaskedCartId(123);
+ * use Tapbuy\RedirectTracking\Api\Cart\CartResolverInterface;
+ *
+ * class SomeService
+ * {
+ *     public function __construct(
+ *         private readonly CartResolverInterface $cartResolver
+ *     ) {
+ *     }
+ *
+ *     public function execute(): void
+ *     {
+ *         // Load by masked ID
+ *         $cart = $this->cartResolver->resolveAndLoadQuote('masked-id-abc123');
+ *
+ *         // Or resolve just the ID
+ *         $cartId = $this->cartResolver->resolveCartId('masked-id-abc123');
+ *
+ *         // Or get the masked ID from a numeric ID
+ *         $maskedId = $this->cartResolver->getMaskedCartId(123);
+ *     }
+ * }
  * ```
  */
 interface CartResolverInterface
