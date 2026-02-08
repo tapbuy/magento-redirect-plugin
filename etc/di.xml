@@ -157,7 +157,7 @@
         </arguments>
     </type>
 
-    <type name="Magento\Framework\GraphQl\Query\ErrorHandler">
+    <type name="Magento\Framework\GraphQl\Query\ErrorHandlerInterface">
         <plugin name="tapbuy_graphql_exception_logger"
                 type="Tapbuy\RedirectTracking\Plugin\GraphQlExceptionLogger"
                 sortOrder="10"/>

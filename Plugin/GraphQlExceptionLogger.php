@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Tapbuy\RedirectTracking\Plugin;
 
 use GraphQL\Error\Error;
-use Magento\Framework\GraphQl\Query\ErrorHandler;
+use Magento\Framework\GraphQl\Query\ErrorHandlerInterface;
 use Tapbuy\RedirectTracking\Api\LoggerInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
 
@@ -48,13 +48,13 @@ class GraphQlExceptionLogger
     /**
      * Log exceptions before they are handled by GraphQL error handler
      *
-     * @param ErrorHandler $subject
+     * @param ErrorHandlerInterface $subject
      * @param array $errors
      * @param callable $formatter
      * @return array
      */
     public function beforeHandle(
-        ErrorHandler $subject,
+        ErrorHandlerInterface $subject,
         array $errors,
         callable $formatter
     ): array {
@@ -79,7 +79,7 @@ class GraphQlExceptionLogger
                 if ($error instanceof Error) {
                     $message = $error->getMessage();
                     $errorContext['graphql_error'] = true;
-                    
+
                     // Extract underlying exception if available
                     $previousError = $error->getPrevious();
                     if ($previousError instanceof \Throwable) {
@@ -93,7 +93,7 @@ class GraphQlExceptionLogger
                             'stacktrace' => $previousError->getTraceAsString(),
                             'stacktrace_with_context' => json_encode($this->enrichStacktraceWithContext($previousError)),
                         ];
-                        
+
                         // Keep previous_exception for backward compatibility
                         $errorContext['previous_exception'] = [
                             'class' => get_class($previousError),
@@ -105,7 +105,7 @@ class GraphQlExceptionLogger
                     // Handle regular Throwable exceptions
                     $message = $error->getMessage();
                     $errorContext['graphql_error'] = false;
-                    
+
                     // Store in nested structure for FetchLogs compatibility
                     $errorContext['exception'] = [
                         'class' => get_class($error),
@@ -116,7 +116,7 @@ class GraphQlExceptionLogger
                         'stacktrace' => $error->getTraceAsString(),
                         'stacktrace_with_context' => json_encode($this->enrichStacktraceWithContext($error)),
                     ];
-                    
+
                     // Keep flat fields for backward compatibility
                     $errorContext['exception_class'] = get_class($error);
                     $errorContext['exception_code'] = $error->getCode();
@@ -157,7 +157,7 @@ class GraphQlExceptionLogger
     private function enrichStacktraceWithContext(\Throwable $exception, int $contextLines = 2): array
     {
         $frames = [];
-        
+
         // Add the exception origin frame first
         $frames[] = [
             'file' => $this->normalizePath($exception->getFile()),
@@ -168,13 +168,13 @@ class GraphQlExceptionLogger
             'context_line' => $this->getSourceCodeLine($exception->getFile(), $exception->getLine()),
             'post_context' => $this->getSourceCodeLines($exception->getFile(), $exception->getLine(), $contextLines, 'after'),
         ];
-        
+
         // Add frames from exception trace
         foreach ($exception->getTrace() as $trace) {
             if (!isset($trace['file'])) {
                 continue;
             }
-            
+
             $frames[] = [
                 'file' => $this->normalizePath($trace['file']),
                 'line' => $trace['line'] ?? 0,
@@ -185,7 +185,7 @@ class GraphQlExceptionLogger
                 'post_context' => $this->getSourceCodeLines($trace['file'], $trace['line'] ?? 0, $contextLines, 'after'),
             ];
         }
-        
+
         return $frames;
     }
 
@@ -202,17 +202,17 @@ class GraphQlExceptionLogger
         if (strpos($filePath, '/var/www/vendor/') === 0) {
             return str_replace('/var/www/vendor/', '/vendor/', $filePath);
         }
-        
+
         // Keep /app/ paths as-is
         if (strpos($filePath, '/app/') === 0) {
             return $filePath;
         }
-        
+
         // Keep /vendor/ paths as-is
         if (strpos($filePath, '/vendor/') === 0) {
             return $filePath;
         }
-        
+
         // Return as-is for other paths
         return $filePath;
     }
@@ -240,7 +240,7 @@ class GraphQlExceptionLogger
             }
 
             $result = [];
-            
+
             if ($position === 'before') {
                 $startLine = max(0, $lineNumber - $numLines - 1);
                 $endLine = max(0, $lineNumber - 2);
@@ -248,13 +248,13 @@ class GraphQlExceptionLogger
                 $startLine = $lineNumber;
                 $endLine = min(count($lines) - 1, $lineNumber + $numLines - 1);
             }
-            
+
             for ($i = $startLine; $i <= $endLine; $i++) {
                 if (isset($lines[$i])) {
                     $result[] = $lines[$i];
                 }
             }
-            
+
             return $result;
         } catch (\Throwable $e) {
             // Silently fail if we can't read the file
@@ -281,7 +281,7 @@ class GraphQlExceptionLogger
             if (!is_array($lines) || !isset($lines[$lineNumber - 1])) {
                 return null;
             }
-            
+
             return $lines[$lineNumber - 1];
         } catch (\Throwable $e) {
             // Silently fail if we can't read the file
