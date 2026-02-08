@@ -34,6 +34,9 @@
     <preference for="Tapbuy\RedirectTracking\Api\Cart\CartResolverInterface"
                 type="Tapbuy\RedirectTracking\Model\Cart\CartResolver"/>
 
+    <preference for="Tapbuy\RedirectTracking\Api\Order\OrderLocatorInterface"
+                type="Tapbuy\RedirectTracking\Model\Order\OrderLocator"/>
+
     <!-- Tapbuy Centralized Logger Configuration -->
     <type name="Tapbuy\RedirectTracking\Logger\Handler">
         <arguments>
