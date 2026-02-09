@@ -1,7 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Tapbuy Redirect and Tracking Helper
+ *
+ * Coordinates core functionality through focused service classes.
+ * This class provides a facade to the underlying services and maintains
+ * backward compatibility with the DataHelperInterface.
  *
  * @category  Tapbuy
  * @package   Tapbuy_RedirectTracking
@@ -9,68 +15,38 @@
 
 namespace Tapbuy\RedirectTracking\Helper;
 
-use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\State;
-use Magento\Framework\App\RequestInterface;
-use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\HTTP\Header;
-use Magento\Framework\Locale\Resolver;
-use Magento\Framework\Serialize\Serializer\Json;
-use Magento\Framework\UrlInterface;
-use Magento\Framework\Stdlib\CookieManagerInterface;
-use Magento\Store\Model\StoreManagerInterface;
-use Tapbuy\RedirectTracking\Model\Config;
-use Tapbuy\RedirectTracking\Model\Cookie;
-use Psr\Log\LoggerInterface;
+use Magento\Framework\App\RequestInterface;
+use Tapbuy\RedirectTracking\Api\DataHelperInterface;
+use Tapbuy\RedirectTracking\Service\CookieService;
+use Tapbuy\RedirectTracking\Service\EncryptionService;
+use Tapbuy\RedirectTracking\Service\LocaleService;
+use Tapbuy\RedirectTracking\Service\PixelService;
 
-class Data extends AbstractHelper
+class Data extends AbstractHelper implements DataHelperInterface
 {
     /**
-     * @var Config
+     * @var CookieService
      */
-    private $config;
+    private $cookieService;
 
     /**
-     * @var CookieManagerInterface
+     * @var EncryptionService
      */
-    private $cookieManager;
+    private $encryptionService;
 
     /**
-     * @var Cookie
+     * @var LocaleService
      */
-    private $cookie;
+    private $localeService;
 
     /**
-     * @var RequestInterface
+     * @var PixelService
      */
-    private $request;
-
-    /**
-     * @var EncryptorInterface
-     */
-    private $encryptor;
-
-    /**
-     * @var Json
-     */
-    private $json;
-
-    /**
-     * @var Resolver
-     */
-    private $localeResolver;
-
-    /**
-     * @var Header
-     */
-    private $httpHeader;
-
-    /**
-     * @var QuoteIdMaskFactory
-     */
-    private $quoteIdMaskFactory;
+    private $pixelService;
 
     /**
      * @var State
@@ -78,86 +54,45 @@ class Data extends AbstractHelper
     private $appState;
 
     /**
-     * @var StoreManagerInterface
+     * @var Header
      */
-    private $storeManager;
+    private $httpHeader;
 
     /**
-     * @var LoggerInterface
+     * @var RequestInterface
      */
-    private $logger;
-
-    /**
-     * @var array
-     */
-    private $cookies = [];
-
-    /**
-     * @var array
-     */
-    private $trackingCookies = [];
-
-    /**
-     * @var array
-     */
-    private $storeCookies = [];
+    private $request;
 
     /**
      * Data constructor.
      *
      * @param Context $context
-     * @param Config $config
-     * @param CookieManagerInterface $cookieManager
-     * @param Cookie $cookie
-     * @param EncryptorInterface $encryptor
-     * @param Json $json
-     * @param Resolver $localeResolver
+     * @param CookieService $cookieService
+     * @param EncryptionService $encryptionService
+     * @param LocaleService $localeService
+     * @param PixelService $pixelService
+     * @param State $appState
      * @param Header $httpHeader
      * @param RequestInterface $request
-     * @param QuoteIdMaskFactory $quoteIdMaskFactory
-     * @param State $appState
-     * @param StoreManagerInterface $storeManager
-     * @param LoggerInterface $logger
      */
     public function __construct(
         Context $context,
-        Config $config,
-        CookieManagerInterface $cookieManager,
-        Cookie $cookie,
-        EncryptorInterface $encryptor,
-        Json $json,
-        Resolver $localeResolver,
-        Header $httpHeader,
-        RequestInterface $request,
-        QuoteIdMaskFactory $quoteIdMaskFactory,
+        CookieService $cookieService,
+        EncryptionService $encryptionService,
+        LocaleService $localeService,
+        PixelService $pixelService,
         State $appState,
-        StoreManagerInterface $storeManager,
-        LoggerInterface $logger
+        Header $httpHeader,
+        RequestInterface $request
     ) {
-        $this->config = $config;
-        $this->cookieManager = $cookieManager;
-        $this->cookie = $cookie;
-        $this->encryptor = $encryptor;
-        $this->json = $json;
-        $this->localeResolver = $localeResolver;
+        $this->cookieService = $cookieService;
+        $this->encryptionService = $encryptionService;
+        $this->localeService = $localeService;
+        $this->pixelService = $pixelService;
+        $this->appState = $appState;
         $this->httpHeader = $httpHeader;
         $this->request = $request;
-        $this->quoteIdMaskFactory = $quoteIdMaskFactory;
-        $this->appState = $appState;
-        $this->storeManager = $storeManager;
-        $this->logger = $logger;
         parent::__construct($context);
-    }
-
-    /**
-     * Check if the request is from Tapbuy API
-     *
-     * @return bool
-     */
-    public function isTapbuyApiRequest()
-    {
-        $apiKey = $this->config->getApiKey();
-        return $apiKey && $this->request->getHeader('x-tapbuy-key') === $apiKey;
     }
 
     /**
@@ -167,8 +102,7 @@ class Data extends AbstractHelper
      */
     public function getCurrentPath()
     {
-        $path = $this->request->getRequestUri();
-        return $path;
+        return $this->request->getRequestUri();
     }
 
     /**
@@ -178,17 +112,7 @@ class Data extends AbstractHelper
      */
     public function getLocale()
     {
-        $locale = $this->localeResolver->getLocale();
-        if ($this->config->getLocaleFormat() === 'short') {
-            if (strpos($locale, '_') !== false) {
-                return substr($locale, 0, strpos($locale, '_'));
-            }
-            if (strpos($locale, '-') !== false) {
-                return substr($locale, 0, strpos($locale, '-'));
-            }
-            return substr($locale, 0, 2);
-        }
-        return $locale;
+        return $this->localeService->getLocale();
     }
 
     /**
@@ -204,6 +128,7 @@ class Data extends AbstractHelper
     /**
      * Check if cart has products
      *
+     * @param \Magento\Quote\Api\Data\CartInterface|null $quote
      * @return bool
      */
     public function hasProductsInCart($quote)
@@ -218,13 +143,7 @@ class Data extends AbstractHelper
      */
     public function getABTestId()
     {
-        $cookie = $this->cookie->getABTestId();
-
-        if (!$cookie) {
-            $cookie = $this->getCookie(Cookie::COOKIE_NAME_ABTEST_ID);
-        }
-
-        return $cookie ?? null;
+        return $this->cookieService->getABTestId();
     }
 
     /**
@@ -235,7 +154,7 @@ class Data extends AbstractHelper
      */
     public function setABTestIdCookie($value)
     {
-        $this->cookie->setABTestIdCookie($value);
+        $this->cookieService->setABTestIdCookie($value);
     }
 
     /**
@@ -245,7 +164,7 @@ class Data extends AbstractHelper
      */
     public function removeABTestIdCookie()
     {
-        $this->cookie->removeABTestIdCookie();
+        $this->cookieService->removeABTestIdCookie();
     }
 
     /**
@@ -257,7 +176,7 @@ class Data extends AbstractHelper
      */
     public function setCookies(array $cookies)
     {
-        $this->cookies = $cookies;
+        $this->cookieService->setCookies($cookies);
     }
 
     /**
@@ -267,26 +186,21 @@ class Data extends AbstractHelper
      */
     public function getCookies(): array
     {
-        return $this->cookies;
+        return $this->cookieService->getCookies();
     }
 
     /**
      * Retrieves the value of a cookie by its name.
-     * Wildcard matching is supported by suffixing the name with '*'.
+     *
+     * Prefix matching is performed when the name does not start with '*'.
+     * If the name starts with '*', no prefix matching is performed and an exact lookup is used.
      *
      * @param string $name The name of the cookie to retrieve.
      * @return string|null The value of the cookie if it exists, or null otherwise.
      */
     public function getCookie(string $name)
     {
-        if (strpos($name, '*') !== 0) {
-            foreach ($this->cookies as $cookieName => $cookieValue) {
-                if (strpos($cookieName, $name) === 0) {
-                    return $cookieValue;
-                }
-            }
-        }
-        return $this->cookies[$name] ?? null;
+        return $this->cookieService->getCookie($name);
     }
 
     /**
@@ -296,34 +210,7 @@ class Data extends AbstractHelper
      */
     public function getTrackingCookies()
     {
-        $cookieNames = ['_ga', '_pcid'];
-
-        foreach ($cookieNames as $cookieName) {
-            $cookieValue = $this->cookieManager->getCookie($cookieName);
-            if ($cookieValue !== null) {
-                $this->trackingCookies[$cookieName] = $cookieValue;
-            }
-        }
-
-
-        $allCookies = $_COOKIE;
-        foreach ($allCookies as $name => $value) {
-            foreach ($cookieNames as $cookieName) {
-                if (strpos($name, $cookieName) === 0 && !isset($this->trackingCookies[$name])) {
-                    $this->trackingCookies[$name] = $value;
-                }
-            }
-        }
-
-        foreach ($this->cookies as $name => $value) {
-            foreach ($cookieNames as $cookieName) {
-                if (strpos($name, $cookieName) === 0 && !isset($this->trackingCookies[$name])) {
-                    $this->trackingCookies[$name] = $value;
-                }
-            }
-        }
-
-        return $this->trackingCookies;
+        return $this->cookieService->getTrackingCookies();
     }
 
     /**
@@ -333,76 +220,18 @@ class Data extends AbstractHelper
      */
     public function getStoreCookies()
     {
-        $cookiePrefixes = ['mage-cache-', 'mage-messages'];
-
-        foreach ($_COOKIE as $name => $value) {
-            foreach ($cookiePrefixes as $prefix) {
-                if (strpos($name, $prefix) === 0) {
-                    $this->logger->debug('getStoreCookies matched', ['cookieName' => $name, 'cookieValue' => $value]);
-                    $this->storeCookies[$name] = $value;
-                    break;
-                }
-            }
-        }
-
-        // Add/override with custom cookies if provided
-        foreach ($this->cookies as $name => $value) {
-            foreach ($cookiePrefixes as $prefix) {
-                if (strpos($name, $prefix) === 0) {
-                    $this->logger->debug('getStoreCookies customCookies', ['cookieName' => $name, 'cookieValue' => $value]);
-                    $this->storeCookies[$name] = $value;
-                    break;
-                }
-            }
-        }
-
-        return $this->storeCookies;
+        return $this->cookieService->getStoreCookies();
     }
 
     /**
      * Get encrypted key for Tapbuy
      *
+     * @param \Magento\Quote\Api\Data\CartInterface|null $quote
      * @return string
      */
     public function getTapbuyKey($quote)
     {
-        $data = [];
-
-        // Get Authorization header from request
-        $authorizationHeader = $this->request->getHeader('Authorization');
-        if ($authorizationHeader) {
-            // Extract Bearer token
-            if (preg_match('/Bearer\s(\S+)/', $authorizationHeader, $matches)) {
-                $data['session_id'] = $matches[1];
-            }
-        }
-
-        // Get cart data if available
-        if ($quote && $quote->getId()) {
-            // Guest cart, retrieve masked ID
-            $quoteIdMask = $this->quoteIdMaskFactory->create()->load($quote->getId(), 'quote_id');
-            $data['cart_id'] = $quoteIdMask->getMaskedId();
-        }
-
-        // Convert to JSON and encrypt
-        $jsonData = $this->json->serialize($data);
-        $encryptionKey = $this->config->getEncryptionKey();
-
-        if (!$encryptionKey) {
-            return '';
-        }
-
-        // Encrypt using AES-256-GCM
-        $encryptionKey = substr(str_pad($encryptionKey, 32, "\0"), 0, 32);
-        $iv = random_bytes(12); // 12-byte nonce for GCM
-        $tag = '';
-        $cipherText = openssl_encrypt($jsonData, 'aes-256-gcm', $encryptionKey, OPENSSL_RAW_DATA, $iv, $tag);
-
-        if ($cipherText === false) {
-            return '';
-        }
-
-        return base64_encode($iv . $tag . $cipherText);
+        return $this->encryptionService->getTapbuyKey($quote);
     }
 
     /**
@@ -428,10 +257,7 @@ class Data extends AbstractHelper
      */
     public function generatePixelUrl(array $data = []): string
     {
-        $baseUrl = $this->storeManager->getStore()->getBaseUrl(UrlInterface::URL_TYPE_WEB);
-        $encodedData = base64_encode(json_encode($data));
-
-        return $baseUrl . 'tapbuy/pixel/track?data=' . $encodedData;
+        return $this->pixelService->generatePixelUrl($data);
     }
 
     /**
@@ -444,13 +270,6 @@ class Data extends AbstractHelper
      */
     public function generatePixelData(string $cartId, array $testResult = [], string $action = 'redirect_check'): array
     {
-        return [
-            'cart_id' => $cartId,
-            'test_id' => $testResult['id'] ?? null,
-            'action' => $action,
-            'timestamp' => time(),
-            'variation_id' => $testResult['variation_id'] ?? null,
-            'remove_test_cookie' => empty($testResult['id']) ? true : false
-        ];
+        return $this->pixelService->generatePixelData($cartId, $testResult, $action);
     }
 }

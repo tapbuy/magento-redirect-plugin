@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Tapbuy Centralized Logger
  *
@@ -10,18 +12,22 @@
 namespace Tapbuy\RedirectTracking\Logger;
 
 use Monolog\Logger;
+use Tapbuy\RedirectTracking\Api\LoggerInterface;
+use Tapbuy\RedirectTracking\Api\TapbuyConstants;
 
-class TapbuyLogger extends Logger
+class TapbuyLogger extends Logger implements LoggerInterface
 {
     /**
      * TapbuyLogger constructor.
+     *
+     * Intentional override to set custom default channel name from TapbuyConstants.
      *
      * @param string $name
      * @param array $handlers
      * @param array $processors
      */
     public function __construct(
-        $name = 'tapbuy',
+        $name = TapbuyConstants::LOGGER_CHANNEL_NAME,
         array $handlers = [],
         array $processors = []
     ) {

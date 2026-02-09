@@ -1,69 +1,79 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tapbuy\RedirectTracking\Model\Resolver;
 
 use Magento\Framework\GraphQl\Query\ResolverInterface;
 use Magento\Framework\GraphQl\Query\Resolver\ContextInterface;
 use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
-use Tapbuy\RedirectTracking\Model\Service;
-use Tapbuy\RedirectTracking\Model\Config;
-use Tapbuy\RedirectTracking\Helper\Data;
-use Magento\Quote\Model\QuoteFactory;
-use Magento\Quote\Model\QuoteIdMaskFactory;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Phrase;
+use Magento\Quote\Model\Quote;
+use Tapbuy\RedirectTracking\Api\ConfigInterface;
+use Tapbuy\RedirectTracking\Api\DataHelperInterface;
+use Tapbuy\RedirectTracking\Api\TapbuyServiceInterface;
+use Tapbuy\RedirectTracking\Model\Authorization\CartOwnershipValidator;
+use Tapbuy\RedirectTracking\Model\Cart\CartResolver;
+use Tapbuy\RedirectTracking\Model\Validator\RedirectInputValidator;
 
 class Redirect implements ResolverInterface
 {
     /**
-     * @var Service
+     * @var TapbuyServiceInterface
      */
     protected $service;
 
     /**
-     * @var Config
+     * @var ConfigInterface
      */
     protected $config;
 
     /**
-     * @var Data
+     * @var DataHelperInterface
      */
     protected $helper;
 
     /**
-     * @var QuoteFactory
+     * @var CartResolver
      */
-    protected $quoteFactory;
+    private $cartResolver;
 
     /**
-     * @var QuoteIdMaskFactory
+     * @var CartOwnershipValidator
      */
-    private $quoteIdMaskFactory;
+    private $cartOwnershipValidator;
+
+    /**
+     * @var RedirectInputValidator
+     */
+    private $inputValidator;
 
     /**
      * Redirect constructor.
      *
      * Initializes the Redirect resolver with required dependencies.
      *
-     * @param Service $service
-     * @param Config $config
-     * @param Data $helper
-     * @param QuoteFactory $quoteFactory
-     * @param QuoteIdMaskFactory $quoteIdMaskFactory
+     * @param TapbuyServiceInterface $service
+     * @param ConfigInterface $config
+     * @param DataHelperInterface $helper
+     * @param CartResolver $cartResolver
+     * @param CartOwnershipValidator $cartOwnershipValidator
+     * @param RedirectInputValidator $inputValidator
      */
     public function __construct(
-        Service $service,
-        Config $config,
-        Data $helper,
-        QuoteFactory $quoteFactory,
-        QuoteIdMaskFactory $quoteIdMaskFactory
+        TapbuyServiceInterface $service,
+        ConfigInterface $config,
+        DataHelperInterface $helper,
+        CartResolver $cartResolver,
+        CartOwnershipValidator $cartOwnershipValidator,
+        RedirectInputValidator $inputValidator
     ) {
         $this->service = $service;
         $this->config = $config;
         $this->helper = $helper;
-        $this->quoteFactory = $quoteFactory;
-        $this->quoteIdMaskFactory = $quoteIdMaskFactory;
+        $this->cartResolver = $cartResolver;
+        $this->cartOwnershipValidator = $cartOwnershipValidator;
+        $this->inputValidator = $inputValidator;
     }
 
     /**
@@ -78,7 +88,7 @@ class Redirect implements ResolverInterface
      * @param ResolveInfo $info Metadata for the GraphQL query.
      * @param array|null $value The value passed from the parent resolver.
      * @param array|null $args The arguments provided in the GraphQL query.
-     * @return mixed The result of the redirect tracking resolution.
+     * @return array The result of the redirect tracking resolution.
      */
     public function resolve(
         Field $field,
@@ -88,63 +98,109 @@ class Redirect implements ResolverInterface
         array $args = null
     ) {
         $input = $args['input'] ?? [];
-        $cartId = $input['cart_id'];
-        if (empty($cartId)) {
-            throw new LocalizedException(new Phrase('Cart ID is required.'));
+        
+        // Step 1: Validate and normalize input
+        $normalizedInput = $this->validateInput($input);
+        
+        // Step 2: Set cookies in the helper
+        $this->helper->setCookies($normalizedInput['cookies']);
+        
+        // Step 3: Resolve and authorize cart
+        $quote = $this->resolveAndAuthorizeCart($normalizedInput['cart_id'], $context);
+        
+        // Step 4: Check preconditions
+        if (!$this->checkPreconditions($quote)) {
+            return $this->buildErrorResponse('Cart not found.');
         }
-        $cookies = [];
-        if (isset($input['cookies'])) {
-            if (is_string($input['cookies'])) {
-                $decoded = json_decode($input['cookies'], true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                    $cookies = $decoded;
-                }
-            } elseif (is_array($input['cookies'])) {
-                $cookies = $input['cookies'];
-            }
-        }
-        $this->helper->setCookies($cookies);
-
-        $forceRedirect = isset($input['force_redirect']) ? $input['force_redirect'] : null;
-        $referer = isset($input['referer']) ? $input['referer'] : null;
-
-        if (!is_numeric($cartId)) {
-            $maskedId = $this->quoteIdMaskFactory->create()->load($cartId, 'masked_id');
-            $cartId = $maskedId->getQuoteId();
-        }
-        $quote = $this->quoteFactory->create()->load($cartId, 'entity_id');
-
-        $customerId = $context->getUserId();
-        if ($customerId) {
-            if ($quote->getCustomerId() && $quote->getCustomerId() != $customerId) {
-                throw new LocalizedException(new Phrase('Cart does not belong to the current customer.'));
-            }
-        }
-
-        if (!$quote || !$quote->getId()) {
-            return [
-                'redirect' => false,
-                'redirect_url' => null,
-                'message' => 'Cart not found.',
-                'pixel_url' => null
-            ];
-        }
-
+        
         if (!$this->config->isEnabled()) {
-            return [
-                'redirect' => false,
-                'redirect_url' => '/checkout',
-                'message' => 'Tapbuy is disabled.',
-                'pixel_url' => null
-            ];
+            return $this->buildErrorResponse('Tapbuy is disabled.', '/checkout');
         }
+        
+        // Step 5: Execute business logic and generate response
+        return $this->executeBusinessLogicAndBuildResponse(
+            $quote,
+            $normalizedInput,
+            $input['cart_id']
+        );
+    }
 
-        $result = $this->service->triggerABTest($quote, $forceRedirect, $referer);
+    /**
+     * Validates and normalizes the input for the resolver.
+     *
+     * @param array $input The raw GraphQL input
+     * @return array The normalized input array
+     * @throws \Magento\Framework\Exception\LocalizedException If validation fails
+     */
+    private function validateInput(array $input): array
+    {
+        return $this->inputValidator->validate($input);
+    }
+
+    /**
+     * Resolves the cart and validates ownership.
+     *
+     * @param string|int $cartId The cart ID (masked or numeric)
+     * @param ContextInterface $context The GraphQL context
+     * @return Quote The resolved quote
+     * @throws \Magento\Framework\Exception\LocalizedException If authorization fails
+     */
+    private function resolveAndAuthorizeCart($cartId, ContextInterface $context): Quote
+    {
+        $quote = $this->cartResolver->resolveAndLoadQuote($cartId);
+        $customerId = $context->getUserId();
+        $this->cartOwnershipValidator->validateOwnership($quote, $customerId);
+        return $quote;
+    }
+
+    /**
+     * Checks if preconditions are met for proceeding.
+     *
+     * @param Quote $quote The quote to check
+     * @return bool True if preconditions are met, false otherwise
+     */
+    private function checkPreconditions(Quote $quote): bool
+    {
+        return $quote && $quote->getId();
+    }
+
+    /**
+     * Executes business logic (AB test) and builds the response.
+     *
+     * @param Quote $quote The cart quote
+     * @param array $normalizedInput The normalized input with optional parameters
+     * @param string|int $originalCartId The original cart ID for pixel generation
+     * @return array The redirect response array
+     */
+    private function executeBusinessLogicAndBuildResponse(
+        Quote $quote,
+        array $normalizedInput,
+        $originalCartId
+    ): array {
+        // Execute AB test
+        $result = $this->service->triggerABTest(
+            $quote,
+            $normalizedInput['force_redirect'],
+            $normalizedInput['referer']
+        );
 
         // Generate pixel URL for headless frontend
-        $pixelData = $this->helper->generatePixelData($args['input']['cart_id'], $result, 'redirect_check');
+        $pixelData = $this->helper->generatePixelData($originalCartId, $result, 'redirect_check');
         $pixelUrl = $this->helper->generatePixelUrl($pixelData);
 
+        // Build and return redirect response
+        return $this->buildRedirectResponse($result, $pixelUrl);
+    }
+
+    /**
+     * Builds the redirect response based on AB test result.
+     *
+     * @param array $result The AB test result
+     * @param string|null $pixelUrl The pixel tracking URL
+     * @return array The response array with redirect decision and pixel URL
+     */
+    private function buildRedirectResponse(array $result, ?string $pixelUrl): array
+    {
         if ($result && isset($result['redirect']) && $result['redirect'] === true && isset($result['redirectURL'])) {
             return [
                 'redirect' => true,
@@ -159,6 +215,23 @@ class Redirect implements ResolverInterface
             'redirect_url' => '/checkout',
             'message' => 'Redirect to standard checkout.',
             'pixel_url' => $pixelUrl
+        ];
+    }
+
+    /**
+     * Builds an error response for early-exit conditions.
+     *
+     * @param string $message The error message
+     * @param string|null $redirectUrl The fallback redirect URL
+     * @return array The error response array
+     */
+    private function buildErrorResponse(string $message, ?string $redirectUrl = null): array
+    {
+        return [
+            'redirect' => false,
+            'redirect_url' => $redirectUrl,
+            'message' => $message,
+            'pixel_url' => null
         ];
     }
 }

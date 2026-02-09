@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Tapbuy Redirect and Tracking Cookie Management
  *
@@ -12,12 +14,10 @@ namespace Tapbuy\RedirectTracking\Model;
 use Magento\Framework\Stdlib\CookieManagerInterface;
 use Magento\Framework\Stdlib\Cookie\CookieMetadataFactory;
 use Magento\Framework\Session\SessionManagerInterface;
+use Tapbuy\RedirectTracking\Api\CookieInterface;
 
-class Cookie
+class Cookie implements CookieInterface
 {
-    public const COOKIE_NAME_ABTEST_ID = 'tb-abtest-id';
-    public const COOKIE_DURATION = 86400; // 1 day
-
     /**
      * @var CookieManagerInterface
      */
