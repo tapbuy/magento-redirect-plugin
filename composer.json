@@ -2,7 +2,7 @@
     "name": "tapbuy/redirect-tracking",
     "description": "Tapbuy module for redirect and tracking",
     "type": "magento2-module",
-    "version": "1.6.0",
+    "version": "1.6.1",
     "license": [
         "OSL-3.0"
     ],
@@ -13,7 +13,7 @@
         "magento/module-sales": "^103.0",
         "magento/module-integration": "^100.4",
         "magento/module-quote": "^101.2",
-        "magento/module-graphql": "^100.4",
+        "magento/module-graph-ql": "^100.4",
         "phpseclib/phpseclib": "^3.0"
     },
     "autoload": {
