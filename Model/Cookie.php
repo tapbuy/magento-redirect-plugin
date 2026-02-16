@@ -112,6 +112,16 @@ class Cookie implements CookieInterface
     }
 
     /**
+     * Determine if cookie should have Secure flag based on current request
+     *
+     * @return bool
+     */
+    private function isCookieSecure(): bool
+    {
+        return $this->request->isSecure();
+    }
+
+    /**
      * Set A/B test ID cookie
      *
      * Note: HttpOnly is disabled because JavaScript needs to read this cookie for
@@ -123,8 +133,7 @@ class Cookie implements CookieInterface
      */
     public function setABTestIdCookie($value)
     {
-        $isSecure = $this->request->isSecure();
-        $this->setCookie(self::COOKIE_NAME_ABTEST_ID, $value, false, $isSecure);
+        $this->setCookie(self::COOKIE_NAME_ABTEST_ID, $value, false, $this->isCookieSecure());
     }
 
     /**
@@ -134,8 +143,7 @@ class Cookie implements CookieInterface
      */
     public function removeABTestIdCookie()
     {
-        $isSecure = $this->request->isSecure();
-        $this->removeCookie(self::COOKIE_NAME_ABTEST_ID, false, $isSecure);
+        $this->removeCookie(self::COOKIE_NAME_ABTEST_ID, false, $this->isCookieSecure());
     }
 
     /**
