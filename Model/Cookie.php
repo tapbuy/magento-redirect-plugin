@@ -14,6 +14,7 @@ namespace Tapbuy\RedirectTracking\Model;
 use Magento\Framework\Stdlib\CookieManagerInterface;
 use Magento\Framework\Stdlib\Cookie\CookieMetadataFactory;
 use Magento\Framework\Session\SessionManagerInterface;
+use Magento\Framework\App\RequestInterface;
 use Tapbuy\RedirectTracking\Api\CookieInterface;
 
 class Cookie implements CookieInterface
@@ -34,20 +35,28 @@ class Cookie implements CookieInterface
     private $sessionManager;
 
     /**
+     * @var RequestInterface
+     */
+    private $request;
+
+    /**
      * Cookie constructor.
      *
      * @param CookieManagerInterface $cookieManager
      * @param CookieMetadataFactory $cookieMetadataFactory
      * @param SessionManagerInterface $sessionManager
+     * @param RequestInterface $request
      */
     public function __construct(
         CookieManagerInterface $cookieManager,
         CookieMetadataFactory $cookieMetadataFactory,
-        SessionManagerInterface $sessionManager
+        SessionManagerInterface $sessionManager,
+        RequestInterface $request
     ) {
         $this->cookieManager = $cookieManager;
         $this->cookieMetadataFactory = $cookieMetadataFactory;
         $this->sessionManager = $sessionManager;
+        $this->request = $request;
     }
 
     /**
@@ -103,14 +112,28 @@ class Cookie implements CookieInterface
     }
 
     /**
+     * Determine if cookie should have Secure flag based on current request
+     *
+     * @return bool
+     */
+    private function isCookieSecure(): bool
+    {
+        return $this->request->isSecure();
+    }
+
+    /**
      * Set A/B test ID cookie
+     *
+     * Note: HttpOnly is disabled because JavaScript needs to read this cookie for
+     * A/B test tracking, transaction analytics, and headless integration.
+     * Secure flag is conditionally set based on HTTPS detection.
      *
      * @param string $value
      * @return void
      */
     public function setABTestIdCookie($value)
     {
-        $this->setCookie(self::COOKIE_NAME_ABTEST_ID, $value, false, false);
+        $this->setCookie(self::COOKIE_NAME_ABTEST_ID, $value, false, $this->isCookieSecure());
     }
 
     /**
@@ -120,7 +143,7 @@ class Cookie implements CookieInterface
      */
     public function removeABTestIdCookie()
     {
-        $this->removeCookie(self::COOKIE_NAME_ABTEST_ID, false, false);
+        $this->removeCookie(self::COOKIE_NAME_ABTEST_ID, false, $this->isCookieSecure());
     }
 
     /**

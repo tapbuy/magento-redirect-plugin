@@ -150,7 +150,7 @@ const variables = {
 
 The module manages the following cookies:
 
-- **tb-abtest-id**: Stores the A/B test variation ID (HttpOnly, Secure, 1-day duration)
+- **tb-abtest-id**: Stores the A/B test variation ID (NOT HttpOnly to allow JavaScript access, Secure on HTTPS, 1-day duration)
 - Tracks various analytics cookies (`_ga`, `_pcid`, etc.) for Tapbuy analysis
 - Preserves Magento session cookies for seamless integration
 
