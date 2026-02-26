@@ -143,8 +143,47 @@ const variables = {
 
 4. **Security**: 
    - Cart and session data is encrypted using AES-256 encryption
-   - API requests include proper headers and authentication
+   - API requests are authenticated via short-lived Admin JWT tokens (4h TTL); legacy Integration OAuth tokens are accepted during migration
    - Sensitive configuration values are encrypted in the database
+
+## API Authentication
+
+The module uses token-based authentication to secure all GraphQL operations when called from the Tapbuy API. Two token types are supported:
+
+### Admin JWT tokens (recommended)
+
+Short-lived tokens issued via `POST /rest/V1/integration/admin/token`. This is the preferred approach as tokens expire after 4 hours (configurable in **Stores > Configuration > Advanced > Admin > Security > Admin Session Lifetime**), limiting the blast radius of any leaked credential.
+
+**Setup**
+
+1. Create a dedicated Magento admin user (System → All Users → Add New User), e.g. `tapbuy_api`. Do **not** use a personal admin account.
+2. Create a restricted role (System → User Roles → Add New Role):
+   - Under **Role Resources**, select **Custom** and check `Tapbuy_RedirectTracking::tapbuy` (grants access to all Tapbuy operations). Fine-grained resources are also available under that node if needed.
+3. Assign the new user to this role.
+4. In the Tapbuy API console, set `api_user` / `api_key` on the retailer to the admin username / password. The API will automatically fetch and rotate tokens.
+
+> **Important**: Run `bin/magento setup:upgrade && bin/magento cache:flush` after installing or updating the module so Magento picks up the ACL resources from `acl.xml`.
+
+### Integration OAuth tokens (legacy — transition period only)
+
+Static OAuth tokens created via **System → Integrations**. These never expire, which is a security risk. They remain supported during the transition period so that retailers can migrate without downtime, but **should be replaced with admin JWT tokens**.
+
+> Revoking or deleting an integration token before updating the module on the Magento side will cause an authentication failure. Always update the module first, then rotate the credential.
+
+### ACL resources
+
+| Resource | Description |
+|---|---|
+| `Tapbuy_RedirectTracking::tapbuy` | Super-admin — grants all Tapbuy resources |
+| `Tapbuy_RedirectTracking::order_view` | Read order data |
+| `Tapbuy_RedirectTracking::order_edit` | Edit orders |
+| `Tapbuy_RedirectTracking::order_assign` | Assign customer to order |
+| `Tapbuy_RedirectTracking::cart_unlock` | Unlock a cart |
+| `Tapbuy_RedirectTracking::cart_deactivate` | Deactivate a cart |
+| `Tapbuy_RedirectTracking::customer_search` | Search customers |
+| `Tapbuy_RedirectTracking::customer_view` | View customer data |
+| `Tapbuy_RedirectTracking::modules_versions` | Read module versions |
+| `Tapbuy_RedirectTracking::logs` | Fetch Tapbuy logs |
 
 ## Cookie Management
 
