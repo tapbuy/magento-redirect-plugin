@@ -148,7 +148,7 @@ const variables = {
 
 ## API Authentication
 
-The module uses token-based authentication to secure all GraphQL operations called by the Tapbuy API. Two token types are supported:
+The module uses token-based authentication to secure all GraphQL operations when called from the Tapbuy API. Two token types are supported:
 
 ### Admin JWT tokens (recommended)
 

@@ -144,7 +144,7 @@ class TokenAuthorization implements TokenAuthorizationInterface
      * populated from the Authorization header by the GraphQL request pipeline.
      *
      * Permission checks:
-     * - Magento all-resources grant (Magento_Backend::all)
+     * - Magento all-resources grants (Magento_Backend::admin, Magento_Backend::all)
      * - Tapbuy super-admin resource (Tapbuy_RedirectTracking::tapbuy)
      * - Parent Tapbuy resources that grant access to child resources
      * - The specific required resource
