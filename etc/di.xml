@@ -78,9 +78,9 @@
     <!-- Token Authorization -->
     <type name="Tapbuy\RedirectTracking\Model\Authorization\TokenAuthorization">
         <arguments>
-            <argument name="requestInterface" xsi:type="object">Magento\Framework\App\RequestInterface</argument>
-            <argument name="tokenModelFactory" xsi:type="object">Magento\Integration\Model\Oauth\TokenFactory</argument>
-            <argument name="integrationService" xsi:type="object">Magento\Integration\Model\IntegrationService</argument>
+            <argument name="request" xsi:type="object">Magento\Framework\App\RequestInterface</argument>
+            <argument name="userContext" xsi:type="object">Magento\Authorization\Model\CompositeUserContext</argument>
+            <argument name="authorization" xsi:type="object">Magento\Framework\Authorization</argument>
         </arguments>
     </type>
 

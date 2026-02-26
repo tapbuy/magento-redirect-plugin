@@ -8,8 +8,8 @@ declare(strict_types=1);
  * Centralized token authorization for all Tapbuy modules.
  * Provides both simple authorization check and permission-based authorization.
  *
- * Supports Tapbuy-specific ACL resources with backward compatibility for legacy Magento resources.
- * During the transition period, both old Magento resources and new Tapbuy resources are accepted.
+ * Supports Admin JWT tokens (short-lived, issued via POST /rest/V1/integration/admin/token)
+ * with backward compatibility for legacy Integration OAuth tokens during the transition period.
  *
  * @category  Tapbuy
  * @package   Tapbuy_RedirectTracking
@@ -17,10 +17,10 @@ declare(strict_types=1);
 
 namespace Tapbuy\RedirectTracking\Model\Authorization;
 
+use Magento\Authorization\Model\UserContextInterface;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\AuthorizationInterface;
 use Magento\Framework\GraphQl\Exception\GraphQlAuthorizationException;
-use Magento\Integration\Model\Oauth\TokenFactory;
-use Magento\Integration\Model\IntegrationService;
 use Tapbuy\RedirectTracking\Api\Authorization\TokenAuthorizationInterface;
 
 class TokenAuthorization implements TokenAuthorizationInterface
@@ -76,33 +76,43 @@ class TokenAuthorization implements TokenAuthorizationInterface
     ];
 
     /**
+     * User types accepted as valid callers.
+     * Accepts both Admin JWT (USER_TYPE_ADMIN) and legacy Integration OAuth tokens (USER_TYPE_INTEGRATION)
+     * to allow rolling deployment without downtime.
+     */
+    private const ACCEPTED_USER_TYPES = [
+        UserContextInterface::USER_TYPE_ADMIN,
+        UserContextInterface::USER_TYPE_INTEGRATION,
+    ];
+
+    /**
      * @var RequestInterface
      */
     private $request;
 
     /**
-     * @var TokenFactory
+     * @var UserContextInterface
      */
-    private $tokenFactory;
+    private $userContext;
 
     /**
-     * @var IntegrationService
+     * @var AuthorizationInterface
      */
-    private $integrationService;
+    private $authorization;
 
     /**
      * @param RequestInterface $request
-     * @param TokenFactory $tokenFactory
-     * @param IntegrationService $integrationService
+     * @param UserContextInterface $userContext
+     * @param AuthorizationInterface $authorization
      */
     public function __construct(
         RequestInterface $request,
-        TokenFactory $tokenFactory,
-        IntegrationService $integrationService
+        UserContextInterface $userContext,
+        AuthorizationInterface $authorization
     ) {
         $this->request = $request;
-        $this->tokenFactory = $tokenFactory;
-        $this->integrationService = $integrationService;
+        $this->userContext = $userContext;
+        $this->authorization = $authorization;
     }
 
     /**
@@ -129,76 +139,81 @@ class TokenAuthorization implements TokenAuthorizationInterface
     /**
      * Check if the token has the required permission.
      *
-     * Supports Tapbuy-specific ACL resources with backward compatibility:
-     * - Checks for Magento super-admin resources (Magento_Backend::admin, Magento_Backend::all)
-     * - Checks for Tapbuy super-admin resource (Tapbuy::tapbuy)
-     * - Checks for parent Tapbuy resources that grant access to child resources
-     * - Checks for the specific required resource
-     * - (Backward compatibility) Checks for legacy Magento resources mapped to Tapbuy resources
+     * Accepts both Admin JWT tokens and legacy Integration OAuth tokens (backward compatibility).
+     * Token validation is delegated to Magento's UserContextInterface which is automatically
+     * populated from the Authorization header by the GraphQL request pipeline.
+     *
+     * Permission checks:
+     * - Magento all-resources grant (Magento_Backend::all)
+     * - Tapbuy super-admin resource (Tapbuy_RedirectTracking::tapbuy)
+     * - Parent Tapbuy resources that grant access to child resources
+     * - The specific required resource
+     * - (Backward compatibility) Legacy Magento resources mapped to Tapbuy resources
      *
      * @param string $requiredResource The resource to check permissions for.
      * @throws GraphQlAuthorizationException If the token is invalid or lacks permissions.
      */
     public function authorize(string $requiredResource): void
     {
-        $token = $this->getToken();
-        $tokenModel = $this->tokenFactory->create()->loadByToken($token);
+        // Validate header format (throws if missing or malformed)
+        $this->getToken();
 
-        if (!$tokenModel->getId()) {
-            throw new GraphQlAuthorizationException(__('Invalid token.'));
+        $userType = $this->userContext->getUserType();
+        $userId = $this->userContext->getUserId();
+
+        if (!$userId || !in_array($userType, self::ACCEPTED_USER_TYPES)) {
+            throw new GraphQlAuthorizationException(
+                __('A valid admin or integration token is required.')
+            );
         }
 
-        $consumerId = $tokenModel->getConsumerId();
-        $integration = $this->integrationService->findByConsumerId($consumerId);
-
-        if (!$integration->getId() || !$integration->getStatus()) {
-            throw new GraphQlAuthorizationException(__('Invalid integration.'));
-        }
-
-        // Get integration permissions
-        $permissions = $this->integrationService->getSelectedResources($integration->getId());
-
-        // Check if authorized
-        if (!$this->hasPermission($permissions, $requiredResource)) {
-            throw new GraphQlAuthorizationException(__('You do not have permission to access this resource.'));
+        if (!$this->hasPermission($requiredResource)) {
+            throw new GraphQlAuthorizationException(
+                __('You do not have permission to access this resource.')
+            );
         }
     }
 
     /**
-     * Check if the given permissions grant access to the required resource.
+     * Check if the current user has permission to access the required resource.
      *
-     * @param array $permissions List of granted permissions
+     * Uses Magento's AuthorizationInterface which correctly resolves permissions
+     * from the active UserContext for both admin JWTs and integration tokens.
+     *
      * @param string $requiredResource The required resource
      * @return bool
      */
-    private function hasPermission(array $permissions, string $requiredResource): bool
+    private function hasPermission(string $requiredResource): bool
     {
         // Check for Magento super-admin resources
-        if (in_array('Magento_Backend::admin', $permissions) || in_array('Magento_Backend::all', $permissions)) {
+        if ($this->authorization->isAllowed('Magento_Backend::admin')
+            || $this->authorization->isAllowed('Magento_Backend::all')
+        ) {
             return true;
         }
 
         // Check for Tapbuy super-admin resource
-        if (in_array(self::TAPBUY_SUPER_ADMIN, $permissions)) {
+        if ($this->authorization->isAllowed(self::TAPBUY_SUPER_ADMIN)) {
             return true;
         }
 
         // Check for direct permission
-        if (in_array($requiredResource, $permissions)) {
+        if ($this->authorization->isAllowed($requiredResource)) {
             return true;
         }
 
         // Check for parent resources that grant access to the required resource
         foreach (self::PARENT_RESOURCES as $parentResource => $childResources) {
-            if (in_array($parentResource, $permissions) && in_array($requiredResource, $childResources)) {
+            if ($this->authorization->isAllowed($parentResource)
+                && in_array($requiredResource, $childResources)
+            ) {
                 return true;
             }
         }
 
         // Backward compatibility: Check for legacy Magento resources
         if (isset(self::LEGACY_RESOURCE_MAPPING[$requiredResource])) {
-            $legacyResource = self::LEGACY_RESOURCE_MAPPING[$requiredResource];
-            if (in_array($legacyResource, $permissions)) {
+            if ($this->authorization->isAllowed(self::LEGACY_RESOURCE_MAPPING[$requiredResource])) {
                 return true;
             }
         }
@@ -207,35 +222,20 @@ class TokenAuthorization implements TokenAuthorizationInterface
     }
 
     /**
-     * Check if the request has a valid integration token (simple check without permission verification)
+     * Check if the request carries a valid admin or integration token (without permission check).
      *
      * @return bool
      */
     public function isAuthorized(): bool
     {
         try {
-            $token = $this->getToken();
-            $tokenModel = $this->tokenFactory->create()->loadByToken($token);
+            // Validate header format
+            $this->getToken();
 
-            if (!$tokenModel->getId()) {
-                return false;
-            }
+            $userType = $this->userContext->getUserType();
+            $userId = $this->userContext->getUserId();
 
-            // Check if token is for an integration (not customer or admin)
-            $customerId = $tokenModel->getCustomerId();
-            $adminId = $tokenModel->getAdminId();
-
-            // Integration tokens have neither customer nor admin ID
-            if ($customerId || $adminId) {
-                return false;
-            }
-
-            // Verify the token is not revoked
-            if ($tokenModel->getRevoked()) {
-                return false;
-            }
-
-            return true;
+            return $userId > 0 && in_array($userType, self::ACCEPTED_USER_TYPES);
         } catch (\Exception $e) {
             return false;
         }
