@@ -16,6 +16,7 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\Result\Raw;
 use Magento\Framework\Controller\Result\RawFactory;
+use Tapbuy\RedirectTracking\Api\ConfigInterface;
 use Tapbuy\RedirectTracking\Api\DataHelperInterface;
 use Tapbuy\RedirectTracking\Api\LoggerInterface;
 
@@ -37,6 +38,11 @@ class Track implements HttpGetActionInterface
     private $helper;
 
     /**
+     * @var ConfigInterface
+     */
+    private $config;
+
+    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -48,17 +54,20 @@ class Track implements HttpGetActionInterface
      * @param RawFactory $rawFactory
      * @param DataHelperInterface $helper
      * @param LoggerInterface $logger
+     * @param ConfigInterface $config
      */
     public function __construct(
         RequestInterface $request,
         RawFactory $rawFactory,
         DataHelperInterface $helper,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        ConfigInterface $config
     ) {
         $this->request = $request;
         $this->rawFactory = $rawFactory;
         $this->helper = $helper;
         $this->logger = $logger;
+        $this->config = $config;
     }
 
     /**
@@ -68,6 +77,10 @@ class Track implements HttpGetActionInterface
      */
     public function execute()
     {
+        if (!$this->config->isEnabled()) {
+            return $this->createPixelResponse();
+        }
+
         try {
             // Get pixel data from request
             $encodedData = $this->request->getParam('data');
