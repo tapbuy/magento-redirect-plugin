@@ -88,7 +88,8 @@ class ConfirmOrder implements ResolverInterface
         array $args = null
     ) {
         if (!$this->config->isEnabled()) {
-            return false;
+            // Tapbuy disabled: treat as successful no-op to avoid signaling an error to clients
+            return true;
         }
 
         $input = $args['input'] ?? [];
