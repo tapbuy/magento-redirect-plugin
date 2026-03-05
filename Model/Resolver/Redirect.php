@@ -97,6 +97,10 @@ class Redirect implements ResolverInterface
         array $value = null,
         array $args = null
     ) {
+        if (!$this->config->isEnabled()) {
+            return $this->buildErrorResponse('Tapbuy is disabled.', '/checkout');
+        }
+
         $input = $args['input'] ?? [];
         
         // Step 1: Validate and normalize input
@@ -111,10 +115,6 @@ class Redirect implements ResolverInterface
         // Step 4: Check preconditions
         if (!$this->checkPreconditions($quote)) {
             return $this->buildErrorResponse('Cart not found.');
-        }
-        
-        if (!$this->config->isEnabled()) {
-            return $this->buildErrorResponse('Tapbuy is disabled.', '/checkout');
         }
         
         // Step 5: Execute business logic and generate response
