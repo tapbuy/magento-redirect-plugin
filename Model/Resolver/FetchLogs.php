@@ -70,7 +70,20 @@ class FetchLogs implements ResolverInterface
         $this->tokenAuthorization->authorize(self::ACL_RESOURCE);
 
         if (!$this->config->isEnabled()) {
-            return ['logs' => ["Tapbuy is disabled."]];
+            return ['logs' => [
+                [
+                    'message'    => 'Tapbuy is disabled.',
+                    'level'      => 200,
+                    'level_name' => 'INFO',
+                    'datetime'   => (new \DateTime())->format(\DateTime::ATOM),
+                    'context'    => null,
+                    'stacktrace' => null,
+                    'stacktrace_with_context' => null,
+                    'error_details' => null,
+                    'channel'    => null,
+                    'trace_id'   => null,
+                ],
+            ]];
         }
 
         $limit = $args['limit'] ?? null;
