@@ -179,8 +179,10 @@ class CookieService
 
         // Collect prefix-matched cookies from browser and injected sources.
         // $_COOKIE takes precedence over $this->cookies when the same key appears in both.
-        $sources = $this->filterCookiesByPrefix($_COOKIE, $cookieNames)
-                 + $this->filterCookiesByPrefix($this->cookies, $cookieNames);
+        $sources = array_replace(
+            $this->filterCookiesByPrefix($this->cookies, $cookieNames),
+            $this->filterCookiesByPrefix($_COOKIE, $cookieNames)
+        );
 
         foreach ($sources as $name => $value) {
             if (!isset($this->trackingCookies[$name])) {
