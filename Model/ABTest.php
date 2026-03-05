@@ -86,16 +86,12 @@ class ABTest implements ABTestInterface
         try {
             $result = $this->service->sendTransactionForOrder($order, $abTestId);
 
-            if ($result && isset($result['id'])) {
-                $this->helper->setABTestIdCookie($result['id']);
-            } else {
-                $this->helper->removeABTestIdCookie();
-            }
+            $this->helper->updateABTestCookie($result ? ($result['id'] ?? null) : null);
         } catch (\Exception $e) {
             $this->logger->logException('Error processing order transaction', $e, [
                 'order_id' => $order->getIncrementId(),
             ]);
-            $this->helper->removeABTestIdCookie();
+            $this->helper->updateABTestCookie(null);
         }
     }
 }

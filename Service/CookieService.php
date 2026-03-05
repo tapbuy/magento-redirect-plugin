@@ -102,6 +102,23 @@ class CookieService
     }
 
     /**
+     * Update the A/B test ID cookie.
+     *
+     * Sets the cookie when an ID is provided, removes it otherwise.
+     *
+     * @param string|null $id
+     * @return void
+     */
+    public function updateABTestCookie(?string $id): void
+    {
+        if ($id !== null) {
+            $this->setABTestIdCookie($id);
+        } else {
+            $this->removeABTestIdCookie();
+        }
+    }
+
+    /**
      * Sets multiple cookies based on the provided associative array.
      *
      * @param array $cookies An associative array where the key is the cookie name and the value is the cookie value.
@@ -152,6 +169,7 @@ class CookieService
     {
         $cookieNames = ['_ga', '_pcid'];
 
+        // Seed with exact-name CookieManager lookups first
         foreach ($cookieNames as $cookieName) {
             $cookieValue = $this->cookieManager->getCookie($cookieName);
             if ($cookieValue !== null) {
@@ -159,20 +177,16 @@ class CookieService
             }
         }
 
-        $allCookies = $_COOKIE;
-        foreach ($allCookies as $name => $value) {
-            foreach ($cookieNames as $cookieName) {
-                if (strpos($name, $cookieName) === 0 && !isset($this->trackingCookies[$name])) {
-                    $this->trackingCookies[$name] = $value;
-                }
-            }
-        }
+        // Collect prefix-matched cookies from browser and injected sources.
+        // $_COOKIE takes precedence over $this->cookies when the same key appears in both.
+        $sources = array_replace(
+            $this->filterCookiesByPrefix($this->cookies, $cookieNames),
+            $this->filterCookiesByPrefix($_COOKIE, $cookieNames)
+        );
 
-        foreach ($this->cookies as $name => $value) {
-            foreach ($cookieNames as $cookieName) {
-                if (strpos($name, $cookieName) === 0 && !isset($this->trackingCookies[$name])) {
-                    $this->trackingCookies[$name] = $value;
-                }
+        foreach ($sources as $name => $value) {
+            if (!isset($this->trackingCookies[$name])) {
+                $this->trackingCookies[$name] = $value;
             }
         }
 
@@ -188,30 +202,38 @@ class CookieService
     {
         $cookiePrefixes = ['mage-cache-', 'mage-messages'];
 
-        foreach ($_COOKIE as $name => $value) {
-            foreach ($cookiePrefixes as $prefix) {
-                if (strpos($name, $prefix) === 0) {
-                    $this->logger->debug('getStoreCookies matched', ['cookieName' => $name, 'cookieValue' => $value]);
-                    $this->storeCookies[$name] = $value;
-                    break;
-                }
-            }
+        foreach ($this->filterCookiesByPrefix($_COOKIE, $cookiePrefixes) as $name => $value) {
+            $this->logger->debug('getStoreCookies matched', ['cookieName' => $name, 'cookieValue' => $value]);
+            $this->storeCookies[$name] = $value;
         }
 
-        // Add/override with custom cookies if provided
-        foreach ($this->cookies as $name => $value) {
-            foreach ($cookiePrefixes as $prefix) {
-                if (strpos($name, $prefix) === 0) {
-                    $this->logger->debug(
-                        'getStoreCookies customCookies',
-                        ['cookieName' => $name, 'cookieValue' => $value]
-                    );
-                    $this->storeCookies[$name] = $value;
-                    break;
-                }
-            }
+        // Injected cookies override browser cookies
+        foreach ($this->filterCookiesByPrefix($this->cookies, $cookiePrefixes) as $name => $value) {
+            $this->logger->debug('getStoreCookies customCookies', ['cookieName' => $name, 'cookieValue' => $value]);
+            $this->storeCookies[$name] = $value;
         }
 
         return $this->storeCookies;
+    }
+
+    /**
+     * Filter an array of cookies keeping only entries whose names start with one of the given prefixes.
+     *
+     * @param array $source  Source array of cookie name => value pairs
+     * @param array $prefixes List of allowed name prefixes
+     * @return array Filtered array containing only matching entries
+     */
+    private function filterCookiesByPrefix(array $source, array $prefixes): array
+    {
+        $result = [];
+        foreach ($source as $name => $value) {
+            foreach ($prefixes as $prefix) {
+                if (strpos($name, $prefix) === 0) {
+                    $result[$name] = $value;
+                    break;
+                }
+            }
+        }
+        return $result;
     }
 }
