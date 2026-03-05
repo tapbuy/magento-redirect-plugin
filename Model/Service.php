@@ -199,7 +199,7 @@ class Service implements TapbuyServiceInterface
 
         // Check if the cart has at least one product
         if (!$this->helper->hasProductsInCart($quote)) {
-            $this->helper->removeABTestIdCookie();
+            $this->helper->updateABTestCookie(null);
             return ['redirect' => false];
         }
 
@@ -218,17 +218,15 @@ class Service implements TapbuyServiceInterface
             $result = $this->sendRequest('/ab-test/variation', $payload);
 
             if ($result) {
-                if (isset($result['id'])) {
-                    $this->helper->setABTestIdCookie($result['id']);
-                };
+                $this->helper->updateABTestCookie($result['id'] ?? null);
                 return $result;
             }
 
-            $this->helper->removeABTestIdCookie();
+            $this->helper->updateABTestCookie(null);
             return ['redirect' => false];
         } catch (\Exception $e) {
             $this->logger->logException('Error triggering A/B test', $e);
-            $this->helper->removeABTestIdCookie();
+            $this->helper->updateABTestCookie(null);
             return ['redirect' => false];
         }
     }
