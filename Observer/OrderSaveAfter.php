@@ -23,6 +23,7 @@ class OrderSaveAfter implements ObserverInterface
      * Target states that trigger a transaction transmission.
      */
     private const TRACKED_STATES = [
+        Order::STATE_NEW,
         Order::STATE_PROCESSING,
         Order::STATE_COMPLETE,
     ];
