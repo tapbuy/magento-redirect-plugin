@@ -92,8 +92,10 @@ class ABTest implements ABTestInterface
         try {
             $result = $this->service->sendTransactionForOrder($order, $abTestId);
 
-            // Mark the order as tracked to prevent duplicate transmissions
-            $order->setData(TapbuyConstants::ABTEST_TRACKING_FLAG, true);
+            // Mark the order as tracked to prevent duplicate transmissions only on success
+            if ($result) {
+                $order->setData(TapbuyConstants::ABTEST_TRACKING_FLAG, true);
+            }
 
             $this->helper->updateABTestCookie($result ? ($result['id'] ?? null) : null);
         } catch (\Exception $e) {
