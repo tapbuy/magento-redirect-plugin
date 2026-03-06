@@ -15,6 +15,7 @@ use Tapbuy\RedirectTracking\Api\ABTestInterface;
 use Tapbuy\RedirectTracking\Api\ConfigInterface;
 use Tapbuy\RedirectTracking\Api\DataHelperInterface;
 use Tapbuy\RedirectTracking\Api\LoggerInterface;
+use Tapbuy\RedirectTracking\Api\TapbuyConstants;
 use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyServiceInterface;
 use Magento\Sales\Model\Order;
@@ -83,8 +84,18 @@ class ABTest implements ABTestInterface
             return;
         }
 
+        // Skip if this order has already been tracked during this request (e.g. direct GraphQL call)
+        if ($order->getData(TapbuyConstants::ABTEST_TRACKING_FLAG)) {
+            return;
+        }
+
         try {
             $result = $this->service->sendTransactionForOrder($order, $abTestId);
+
+            // Mark the order as tracked to prevent duplicate transmissions only on success
+            if ($result) {
+                $order->setData(TapbuyConstants::ABTEST_TRACKING_FLAG, true);
+            }
 
             $this->helper->updateABTestCookie($result ? ($result['id'] ?? null) : null);
         } catch (\Exception $e) {
