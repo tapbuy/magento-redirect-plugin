@@ -23,11 +23,6 @@ class TapbuyConstants
     public const HTTP_HEADER_TAPBUY_CALL = 'X-Tapbuy-Call';
 
     /**
-     * @var string HTTP Header used for API key authentication.
-     */
-    public const HTTP_HEADER_TAPBUY_KEY = 'x-tapbuy-key';
-
-    /**
      * @var string HTTP Header used for trace ID correlation.
      */
     public const HTTP_HEADER_TAPBUY_TRACE_ID = 'X-Tapbuy-Trace-ID';

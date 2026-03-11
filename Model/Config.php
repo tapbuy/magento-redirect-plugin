@@ -19,14 +19,9 @@ use Tapbuy\RedirectTracking\Api\ConfigInterface;
 class Config implements ConfigInterface
 {
     public const XML_PATH_ENABLED = 'tapbuy/general/enabled';
-    public const XML_PATH_MOBILE_REDIRECT_ENABLED = 'tapbuy/general/mobile_redirection_enabled';
-    public const XML_PATH_DESKTOP_REDIRECT_ENABLED = 'tapbuy/general/desktop_redirection_enabled';
     public const XML_PATH_API_URL = 'tapbuy/api/api_url';
-    public const XML_PATH_API_KEY = 'tapbuy/api/api_key';
     public const XML_PATH_ENCRYPTION_KEY = 'tapbuy/api/encryption_key';
     public const XML_PATH_LOCALE_FORMAT = 'tapbuy/api/locale_format';
-    public const XML_PATH_GIFTING_ENABLED = 'tapbuy/gifting/enabled';
-    public const XML_PATH_GIFTING_URL = 'tapbuy/gifting/gifting_url';
     public const XML_PATH_ORDER_CONFIRMATION_MODE = 'tapbuy/tracking/order_confirmation_mode';
 
     /**
@@ -69,44 +64,6 @@ class Config implements ConfigInterface
     }
 
     /**
-     * Check if mobile redirection is enabled
-     *
-     * @param int|null $storeId
-     * @return bool
-     */
-    public function isMobileRedirectionEnabled($storeId = null)
-    {
-        if (!$this->isEnabled($storeId)) {
-            return false;
-        }
-
-        return $this->scopeConfig->isSetFlag(
-            self::XML_PATH_MOBILE_REDIRECT_ENABLED,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    /**
-     * Check if desktop redirection is enabled
-     *
-     * @param int|null $storeId
-     * @return bool
-     */
-    public function isDesktopRedirectionEnabled($storeId = null)
-    {
-        if (!$this->isEnabled($storeId)) {
-            return false;
-        }
-
-        return $this->scopeConfig->isSetFlag(
-            self::XML_PATH_DESKTOP_REDIRECT_ENABLED,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    /**
      * Get Tapbuy API URL
      *
      * @param int|null $storeId
@@ -116,21 +73,6 @@ class Config implements ConfigInterface
     {
         return $this->scopeConfig->getValue(
             self::XML_PATH_API_URL,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    /**
-     * Get Tapbuy API Key
-     *
-     * @param int|null $storeId
-     * @return string
-     */
-    public function getApiKey($storeId = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::XML_PATH_API_KEY,
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
@@ -151,40 +93,6 @@ class Config implements ConfigInterface
         );
 
         return $this->encryptor->decrypt($encryptedKey);
-    }
-
-    /**
-     * Check if gifting is enabled
-     *
-     * @param int|null $storeId
-     * @return bool
-     */
-    public function isGiftingEnabled($storeId = null)
-    {
-        if (!$this->isEnabled($storeId)) {
-            return false;
-        }
-
-        return $this->scopeConfig->isSetFlag(
-            self::XML_PATH_GIFTING_ENABLED,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    /**
-     * Get Gifting URL
-     *
-     * @param int|null $storeId
-     * @return string
-     */
-    public function getGiftingUrl($storeId = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::XML_PATH_GIFTING_URL,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
     }
 
     /**

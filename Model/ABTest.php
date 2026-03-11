@@ -79,8 +79,8 @@ class ABTest implements ABTestInterface
      */
     public function processOrderTransaction($order, $abTestId = null)
     {
-        // Skip if Tapbuy is disabled or it's a Tapbuy API request
-        if (!$this->config->isEnabled() || $this->requestDetector->isTapbuyApiRequest()) {
+        // Skip if Tapbuy is disabled or this is a Tapbuy-originated request
+        if (!$this->config->isEnabled() || $this->requestDetector->isTapbuyCall()) {
             return;
         }
 
