@@ -18,6 +18,10 @@ namespace Tapbuy\RedirectTracking\Api;
  */
 interface ConfigInterface
 {
+    public const ORDER_CONFIRMATION_MODE_GRAPHQL = 'graphql';
+    public const ORDER_CONFIRMATION_MODE_OBSERVER = 'observer';
+    public const ORDER_CONFIRMATION_MODE_BOTH = 'both';
+
     /**
      * Check if Tapbuy is enabled
      *

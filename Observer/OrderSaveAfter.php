@@ -16,7 +16,6 @@ use Magento\Sales\Model\Order;
 use Tapbuy\RedirectTracking\Api\ABTestInterface;
 use Tapbuy\RedirectTracking\Api\ConfigInterface;
 use Tapbuy\RedirectTracking\Api\LoggerInterface;
-use Tapbuy\RedirectTracking\Model\Config;
 
 class OrderSaveAfter implements ObserverInterface
 {
@@ -82,7 +81,7 @@ class OrderSaveAfter implements ObserverInterface
         }
 
         $mode = $this->config->getOrderConfirmationMode();
-        if ($mode === Config::ORDER_CONFIRMATION_MODE_GRAPHQL) {
+        if ($mode === ConfigInterface::ORDER_CONFIRMATION_MODE_GRAPHQL) {
             return;
         }
 

@@ -29,10 +29,6 @@ class Config implements ConfigInterface
     public const XML_PATH_GIFTING_URL = 'tapbuy/gifting/gifting_url';
     public const XML_PATH_ORDER_CONFIRMATION_MODE = 'tapbuy/tracking/order_confirmation_mode';
 
-    public const ORDER_CONFIRMATION_MODE_GRAPHQL = 'graphql';
-    public const ORDER_CONFIRMATION_MODE_OBSERVER = 'observer';
-    public const ORDER_CONFIRMATION_MODE_BOTH = 'both';
-
     /**
      * @var ScopeConfigInterface
      */
@@ -218,6 +214,6 @@ class Config implements ConfigInterface
             self::XML_PATH_ORDER_CONFIRMATION_MODE,
             ScopeInterface::SCOPE_STORE,
             $storeId
-        ) ?: self::ORDER_CONFIRMATION_MODE_GRAPHQL;
+        ) ?: ConfigInterface::ORDER_CONFIRMATION_MODE_GRAPHQL;
     }
 }
