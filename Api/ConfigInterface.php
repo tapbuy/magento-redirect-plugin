@@ -89,4 +89,12 @@ interface ConfigInterface
      * @return string
      */
     public function getLocaleFormat($storeId = null);
+
+    /**
+     * Get Order Confirmation Mode (graphql|observer|both)
+     *
+     * @param int|null $storeId
+     * @return string
+     */
+    public function getOrderConfirmationMode($storeId = null);
 }

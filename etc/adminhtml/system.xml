@@ -60,6 +60,17 @@
                     </depends>
                 </field>
             </group>
+            <group id="tracking" translate="label" type="text" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Tracking Settings</label>
+                <field id="order_confirmation_mode" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Order Confirmation Mode</label>
+                    <comment>GraphQL Mutation: fired by the frontend after order placement (carries variation_id). OrderSaveAfter: fired by the Magento observer on order save (no cookies). Both: fire both.</comment>
+                    <source_model>Tapbuy\RedirectTracking\Model\Config\Source\OrderConfirmationMode</source_model>
+                    <depends>
+                        <field id="tapbuy/general/enabled">1</field>
+                    </depends>
+                </field>
+            </group>
             <group id="gifting" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Gifting Settings</label>
                 <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">

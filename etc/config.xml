@@ -11,6 +11,9 @@
                 <api_url>https://api.tapbuy.io</api_url>
                 <locale_format>long</locale_format>
             </api>
+            <tracking>
+                <order_confirmation_mode>graphql</order_confirmation_mode>
+            </tracking>
             <gifting>
                 <enabled>0</enabled>
             </gifting>

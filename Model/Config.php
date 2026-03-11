@@ -27,6 +27,11 @@ class Config implements ConfigInterface
     public const XML_PATH_LOCALE_FORMAT = 'tapbuy/api/locale_format';
     public const XML_PATH_GIFTING_ENABLED = 'tapbuy/gifting/enabled';
     public const XML_PATH_GIFTING_URL = 'tapbuy/gifting/gifting_url';
+    public const XML_PATH_ORDER_CONFIRMATION_MODE = 'tapbuy/tracking/order_confirmation_mode';
+
+    public const ORDER_CONFIRMATION_MODE_GRAPHQL = 'graphql';
+    public const ORDER_CONFIRMATION_MODE_OBSERVER = 'observer';
+    public const ORDER_CONFIRMATION_MODE_BOTH = 'both';
 
     /**
      * @var ScopeConfigInterface
@@ -199,5 +204,20 @@ class Config implements ConfigInterface
             ScopeInterface::SCOPE_STORE,
             $storeId
         ) ?: 'long';
+    }
+
+    /**
+     * Get Order Confirmation Mode (graphql|observer|both)
+     *
+     * @param int|null $storeId
+     * @return string
+     */
+    public function getOrderConfirmationMode($storeId = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_ORDER_CONFIRMATION_MODE,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ) ?: self::ORDER_CONFIRMATION_MODE_GRAPHQL;
     }
 }
