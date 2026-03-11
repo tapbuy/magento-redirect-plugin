@@ -4,16 +4,15 @@
         <tapbuy>
             <general>
                 <enabled>0</enabled>
-                <mobile_redirection_enabled>1</mobile_redirection_enabled>
-                <desktop_redirection_enabled>1</desktop_redirection_enabled>
             </general>
             <api>
                 <api_url>https://api.tapbuy.io</api_url>
                 <locale_format>long</locale_format>
             </api>
-            <gifting>
-                <enabled>0</enabled>
-            </gifting>
+            <tracking>
+                <order_confirmation_mode>graphql</order_confirmation_mode>
+            </tracking>
+
         </tapbuy>
     </default>
 </config>

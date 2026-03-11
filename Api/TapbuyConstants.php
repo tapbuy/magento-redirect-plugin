@@ -17,15 +17,10 @@ namespace Tapbuy\RedirectTracking\Api;
 class TapbuyConstants
 {
     /**
-     * @var string HTTP header used to identify requests originating from the Tapbuy checkout
-     * (as opposed to generic API-key-authenticated API requests).
+     * @var string HTTP header used to identify requests originating from the Tapbuy checkout.
+     * Presence of this header is the sole mechanism for classifying a request as Tapbuy-originated.
      */
     public const HTTP_HEADER_TAPBUY_CALL = 'X-Tapbuy-Call';
-
-    /**
-     * @var string HTTP Header used for API key authentication.
-     */
-    public const HTTP_HEADER_TAPBUY_KEY = 'x-tapbuy-key';
 
     /**
      * @var string HTTP Header used for trace ID correlation.
