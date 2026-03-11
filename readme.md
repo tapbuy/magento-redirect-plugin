@@ -5,7 +5,6 @@ This module integrates Tapbuy's checkout experience with Magento 2, enabling A/B
 ## Features
 
 - A/B testing for checkout experiences via GraphQL
-- Customizable redirection settings for mobile and desktop devices
 - Transaction tracking with order placement events
 - Secure communication with Tapbuy API using AES encryption
 - Seamless integration with Magento's checkout flow
@@ -50,17 +49,17 @@ bin/magento cache:flush
 
 ### General Settings
 - **Is Tapbuy Enabled**: Enable or disable the module
-- **Is Mobile Redirection Enabled**: Enable or disable redirection for mobile devices
-- **Is Desktop Redirection Enabled**: Enable or disable redirection for desktop devices
 
 ### API Settings
 - **API URL for Tapbuy**: Your Tapbuy API endpoint URL (default: https://api.tapbuy.io)
-- **API Key for Tapbuy**: Your Tapbuy API key (encrypted)
 - **Encryption Key for Tapbuy**: Your Tapbuy AES encryption key (encrypted)
+- **Locale Format**: How the store locale is sent to the Tapbuy API — `Long` (e.g. `en_US`) or `Short` (e.g. `en`)
 
-### Gifting Settings
-- **Is Gifting Enabled**: Enable or disable the gifting feature
-- **Gifting URL**: Your Tapbuy gifting URL
+### Tracking Settings
+- **Order Confirmation Mode**: Controls how order tracking is fired after placement:
+  - `GraphQL Mutation` — fired by the frontend after order placement (carries variation ID from cookies)
+  - `OrderSaveAfter Observer` — fired by the Magento observer on order save (no cookie context)
+  - `Both` — fires both mechanisms
 
 ## GraphQL Usage
 
