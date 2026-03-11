@@ -158,7 +158,7 @@ class Service implements TapbuyServiceInterface
      */
     public function sendTransactionForOrder($order, $abTestId = null)
     {
-        if (!$this->config->isEnabled() || $this->requestDetector->isTapbuyApiRequest()) {
+        if (!$this->config->isEnabled() || $this->requestDetector->isTapbuyCall()) {
             return false;
         }
 
@@ -193,7 +193,7 @@ class Service implements TapbuyServiceInterface
      */
     public function triggerABTest($quote, $forceRedirect = null, $referer = null)
     {
-        if (!$this->config->isEnabled() || $this->requestDetector->isTapbuyApiRequest()) {
+        if (!$this->config->isEnabled() || $this->requestDetector->isTapbuyCall()) {
             return ['redirect' => false];
         }
 

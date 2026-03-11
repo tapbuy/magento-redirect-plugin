@@ -14,32 +14,11 @@
                     <label>Is Tapbuy Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="mobile_redirection_enabled" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Is Mobile Redirection Enabled</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <depends>
-                        <field id="enabled">1</field>
-                    </depends>
-                </field>
-                <field id="desktop_redirection_enabled" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Is Desktop Redirection Enabled</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <depends>
-                        <field id="enabled">1</field>
-                    </depends>
-                </field>
             </group>
             <group id="api" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>API Settings</label>
                 <field id="api_url" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>API URL for Tapbuy</label>
-                    <depends>
-                        <field id="tapbuy/general/enabled">1</field>
-                    </depends>
-                </field>
-                <field id="api_key" translate="label" type="obscure" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>API Key for Tapbuy</label>
-                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     <depends>
                         <field id="tapbuy/general/enabled">1</field>
                     </depends>
@@ -60,23 +39,18 @@
                     </depends>
                 </field>
             </group>
-            <group id="gifting" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Gifting Settings</label>
-                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Is Gifting Enabled</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+            <group id="tracking" translate="label" type="text" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Tracking Settings</label>
+                <field id="order_confirmation_mode" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Order Confirmation Mode</label>
+                    <comment>GraphQL Mutation: fired by the frontend after order placement (carries A/B test variation id, field ab_test_id). OrderSaveAfter: fired by the Magento observer on order save (no cookies). Both: fire both.</comment>
+                    <source_model>Tapbuy\RedirectTracking\Model\Config\Source\OrderConfirmationMode</source_model>
                     <depends>
                         <field id="tapbuy/general/enabled">1</field>
-                    </depends>
-                </field>
-                <field id="gifting_url" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Gifting URL</label>
-                    <depends>
-                        <field id="tapbuy/general/enabled">1</field>
-                        <field id="enabled">1</field>
                     </depends>
                 </field>
             </group>
+
         </section>
     </system>
 </config>

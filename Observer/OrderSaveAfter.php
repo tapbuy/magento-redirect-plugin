@@ -80,6 +80,11 @@ class OrderSaveAfter implements ObserverInterface
             return;
         }
 
+        $mode = $this->config->getOrderConfirmationMode();
+        if ($mode === ConfigInterface::ORDER_CONFIRMATION_MODE_GRAPHQL) {
+            return;
+        }
+
         try {
             $order = $observer->getEvent()->getOrder();
             if (!$order || !$order->getId()) {

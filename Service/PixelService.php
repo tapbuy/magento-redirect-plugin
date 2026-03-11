@@ -64,7 +64,7 @@ class PixelService
             'test_id' => $testResult['id'] ?? null,
             'action' => $action,
             'timestamp' => time(),
-            'variation_id' => $testResult['variation_id'] ?? null,
+            'variation_id' => $testResult['id'] ?? null,
             'remove_test_cookie' => empty($testResult['id']) ? true : false
         ];
     }
