@@ -15,6 +15,7 @@ use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Query\ResolverInterface;
 use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
 use Tapbuy\RedirectTracking\Api\Authorization\TokenAuthorizationInterface;
+use Tapbuy\RedirectTracking\Api\ConfigInterface;
 use Tapbuy\RedirectTracking\Api\LogHandlerInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyConstants;
 
@@ -31,19 +32,27 @@ class FetchLogs implements ResolverInterface
     private $tokenAuthorization;
 
     /**
+     * @var ConfigInterface
+     */
+    private $config;
+
+    /**
      * @var LogHandlerInterface
      */
     private $logHandler;
 
     /**
      * @param TokenAuthorizationInterface $tokenAuthorization
+     * @param ConfigInterface $config
      * @param LogHandlerInterface $logHandler
      */
     public function __construct(
         TokenAuthorizationInterface $tokenAuthorization,
+        ConfigInterface $config,
         LogHandlerInterface $logHandler
     ) {
         $this->tokenAuthorization = $tokenAuthorization;
+        $this->config = $config;
         $this->logHandler = $logHandler;
     }
 
@@ -59,6 +68,23 @@ class FetchLogs implements ResolverInterface
     ) {
         // Require proper ACL authorization for log management
         $this->tokenAuthorization->authorize(self::ACL_RESOURCE);
+
+        if (!$this->config->isEnabled()) {
+            return ['logs' => [
+                [
+                    'message'    => 'Tapbuy is disabled.',
+                    'level'      => 200,
+                    'level_name' => 'INFO',
+                    'datetime'   => (new \DateTime())->format(\DateTime::ATOM),
+                    'context'    => null,
+                    'stacktrace' => null,
+                    'stacktrace_with_context' => null,
+                    'error_details' => null,
+                    'channel'    => null,
+                    'trace_id'   => null,
+                ],
+            ]];
+        }
 
         $limit = $args['limit'] ?? null;
         $traceId = $args['traceId'] ?? null;

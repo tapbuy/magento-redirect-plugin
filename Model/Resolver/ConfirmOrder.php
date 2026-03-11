@@ -12,6 +12,7 @@ use Magento\Framework\GraphQl\Exception\GraphQlInputException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\OrderPaymentRepositoryInterface;
 use Tapbuy\RedirectTracking\Api\ABTestInterface;
+use Tapbuy\RedirectTracking\Api\ConfigInterface;
 use Tapbuy\RedirectTracking\Api\LoggerInterface;
 use Tapbuy\RedirectTracking\Api\Order\OrderLocatorInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyConstants;
@@ -31,6 +32,11 @@ class ConfirmOrder implements ResolverInterface
     private $abTest;
 
     /**
+     * @var ConfigInterface
+     */
+    private $config;
+
+    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -45,17 +51,20 @@ class ConfirmOrder implements ResolverInterface
      *
      * @param OrderLocatorInterface $orderLocator
      * @param ABTestInterface $abTest
+     * @param ConfigInterface $config
      * @param LoggerInterface $logger
      * @param OrderPaymentRepositoryInterface $paymentRepository
      */
     public function __construct(
         OrderLocatorInterface $orderLocator,
         ABTestInterface $abTest,
+        ConfigInterface $config,
         LoggerInterface $logger,
         OrderPaymentRepositoryInterface $paymentRepository
     ) {
         $this->orderLocator = $orderLocator;
         $this->abTest = $abTest;
+        $this->config = $config;
         $this->logger = $logger;
         $this->paymentRepository = $paymentRepository;
     }
@@ -78,6 +87,11 @@ class ConfirmOrder implements ResolverInterface
         array $value = null,
         array $args = null
     ) {
+        if (!$this->config->isEnabled()) {
+            // Tapbuy disabled: treat as successful no-op to avoid signaling an error to clients
+            return true;
+        }
+
         $input = $args['input'] ?? [];
         $orderNumber = $input['order_number'] ?? null;
         $abTestId = $input['ab_test_id'] ?? null;

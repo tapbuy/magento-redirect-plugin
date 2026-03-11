@@ -16,8 +16,10 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\Result\Raw;
 use Magento\Framework\Controller\Result\RawFactory;
+use Tapbuy\RedirectTracking\Api\ConfigInterface;
 use Tapbuy\RedirectTracking\Api\DataHelperInterface;
 use Tapbuy\RedirectTracking\Api\LoggerInterface;
+use Tapbuy\RedirectTracking\Helper\JsonDecodeHelper;
 
 class Track implements HttpGetActionInterface
 {
@@ -37,9 +39,19 @@ class Track implements HttpGetActionInterface
     private $helper;
 
     /**
+     * @var ConfigInterface
+     */
+    private $config;
+
+    /**
      * @var LoggerInterface
      */
     private $logger;
+
+    /**
+     * @var JsonDecodeHelper
+     */
+    private $jsonDecodeHelper;
 
     /**
      * Track constructor.
@@ -48,17 +60,23 @@ class Track implements HttpGetActionInterface
      * @param RawFactory $rawFactory
      * @param DataHelperInterface $helper
      * @param LoggerInterface $logger
+     * @param ConfigInterface $config
+     * @param JsonDecodeHelper $jsonDecodeHelper
      */
     public function __construct(
         RequestInterface $request,
         RawFactory $rawFactory,
         DataHelperInterface $helper,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        ConfigInterface $config,
+        JsonDecodeHelper $jsonDecodeHelper
     ) {
         $this->request = $request;
         $this->rawFactory = $rawFactory;
         $this->helper = $helper;
         $this->logger = $logger;
+        $this->config = $config;
+        $this->jsonDecodeHelper = $jsonDecodeHelper;
     }
 
     /**
@@ -68,13 +86,14 @@ class Track implements HttpGetActionInterface
      */
     public function execute()
     {
+        if (!$this->config->isEnabled()) {
+            return $this->createPixelResponse();
+        }
+
         try {
             // Get pixel data from request
             $encodedData = $this->request->getParam('data');
-            $pixelData = [];
-            if ($encodedData) {
-                $pixelData = json_decode(base64_decode($encodedData), true) ?: [];
-            }
+            $pixelData = $encodedData ? $this->jsonDecodeHelper->decodeToArray($encodedData, true) : [];
 
             // Collect cookies sent as query parameters (cookie_* format)
             $cookies = [];

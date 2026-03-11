@@ -16,9 +16,17 @@ namespace Tapbuy\RedirectTracking\Model\Validator;
 
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Phrase;
+use Tapbuy\RedirectTracking\Helper\JsonDecodeHelper;
 
 class RedirectInputValidator
 {
+    /**
+     * @param JsonDecodeHelper $jsonDecodeHelper
+     */
+    public function __construct(
+        private readonly JsonDecodeHelper $jsonDecodeHelper
+    ) {
+    }
     /**
      * Validates and normalizes the input for the Redirect resolver.
      *
@@ -65,27 +73,7 @@ class RedirectInputValidator
      */
     private function parseCookies(array $input): array
     {
-        if (!isset($input['cookies'])) {
-            return [];
-        }
-
-        $cookies = $input['cookies'];
-
-        // Handle JSON string format
-        if (is_string($cookies)) {
-            $decoded = json_decode($cookies, true);
-            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                return $decoded;
-            }
-            return [];
-        }
-
-        // Handle array format
-        if (is_array($cookies)) {
-            return $cookies;
-        }
-
-        return [];
+        return $this->jsonDecodeHelper->decodeToArray($input['cookies'] ?? []);
     }
 
     /**

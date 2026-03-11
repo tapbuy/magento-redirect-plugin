@@ -168,6 +168,17 @@ class Data extends AbstractHelper implements DataHelperInterface
     }
 
     /**
+     * Update the A/B test ID cookie.
+     *
+     * @param string|null $id
+     * @return void
+     */
+    public function updateABTestCookie(?string $id): void
+    {
+        $this->cookieService->updateABTestCookie($id);
+    }
+
+    /**
      * Sets multiple cookies based on the provided associative array.
      *
      * @param array $cookies An associative array where the key is the cookie name and the value is the cookie value.
