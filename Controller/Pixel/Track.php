@@ -19,7 +19,7 @@ use Magento\Framework\Controller\Result\RawFactory;
 use Tapbuy\RedirectTracking\Api\ConfigInterface;
 use Tapbuy\RedirectTracking\Api\DataHelperInterface;
 use Tapbuy\RedirectTracking\Api\LoggerInterface;
-use Tapbuy\RedirectTracking\Helper\JsonDecodeHelper;
+use Tapbuy\RedirectTracking\Model\Validator\PixelInputValidator;
 
 class Track implements HttpGetActionInterface
 {
@@ -49,9 +49,9 @@ class Track implements HttpGetActionInterface
     private $logger;
 
     /**
-     * @var JsonDecodeHelper
+     * @var PixelInputValidator
      */
-    private $jsonDecodeHelper;
+    private $pixelInputValidator;
 
     /**
      * Track constructor.
@@ -61,7 +61,7 @@ class Track implements HttpGetActionInterface
      * @param DataHelperInterface $helper
      * @param LoggerInterface $logger
      * @param ConfigInterface $config
-     * @param JsonDecodeHelper $jsonDecodeHelper
+     * @param PixelInputValidator $pixelInputValidator
      */
     public function __construct(
         RequestInterface $request,
@@ -69,14 +69,14 @@ class Track implements HttpGetActionInterface
         DataHelperInterface $helper,
         LoggerInterface $logger,
         ConfigInterface $config,
-        JsonDecodeHelper $jsonDecodeHelper
+        PixelInputValidator $pixelInputValidator
     ) {
         $this->request = $request;
         $this->rawFactory = $rawFactory;
         $this->helper = $helper;
         $this->logger = $logger;
         $this->config = $config;
-        $this->jsonDecodeHelper = $jsonDecodeHelper;
+        $this->pixelInputValidator = $pixelInputValidator;
     }
 
     /**
@@ -91,16 +91,31 @@ class Track implements HttpGetActionInterface
         }
 
         try {
-            // Get pixel data from request
-            $encodedData = $this->request->getParam('data');
-            $pixelData = $encodedData ? $this->jsonDecodeHelper->decodeToArray($encodedData, true) : [];
+            // Get pixel data from request — treat non-string values (e.g. ?data[]=...)
+            // as invalid rather than letting a TypeError surface from strict_types
+            $rawParam = $this->request->getParam('data');
+            $encodedData = is_string($rawParam) && $rawParam !== '' ? $rawParam : null;
+
+            // Reject oversized payloads before any decode work
+            if ($encodedData && !$this->pixelInputValidator->isInputSizeValid($encodedData)) {
+                $this->logger->warning('Pixel tracking: input exceeds maximum allowed size, request ignored');
+                return $this->createPixelResponse();
+            }
+
+            $pixelData = $encodedData ? $this->pixelInputValidator->decodeAndSanitize($encodedData) : [];
 
             // Collect cookies sent as query parameters (cookie_* format)
+            // Values are sanitized to prevent log injection before any further use
             $cookies = [];
             foreach ($this->request->getParams() as $key => $value) {
                 if (strpos($key, 'cookie_') === 0) {
+                    // Ignore non-scalar values (e.g. cookie_foo[]=x) to avoid
+                    // "Array to string conversion" notices and garbage log entries
+                    if (!is_scalar($value)) {
+                        continue;
+                    }
                     $cookieName = substr($key, 7); // Remove 'cookie_' prefix
-                    $cookies[$cookieName] = $value;
+                    $cookies[$cookieName] = $this->pixelInputValidator->sanitizeCookieValue((string) $value);
                 }
             }
 
@@ -108,9 +123,6 @@ class Track implements HttpGetActionInterface
             if (isset($cookies['tb-abtest-id'])) {
                 $this->helper->setABTestIdCookie($cookies['tb-abtest-id']);
             }
-
-            // Optionally: log or process all cookies as needed
-            // $this->logger->info('Pixel cookies', $cookies);
 
             // Continue with existing pixel data logic
             if ($pixelData && is_array($pixelData)) {
