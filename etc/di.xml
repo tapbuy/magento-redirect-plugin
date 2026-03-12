@@ -94,8 +94,6 @@
     <!-- Cookie Service -->
     <type name="Tapbuy\RedirectTracking\Service\CookieService">
         <arguments>
-            <argument name="cookieManager" xsi:type="object">Magento\Framework\Stdlib\CookieManagerInterface</argument>
-            <argument name="cookie" xsi:type="object">Tapbuy\RedirectTracking\Api\CookieInterface</argument>
             <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\TapbuyLogger</argument>
         </arguments>
     </type>
