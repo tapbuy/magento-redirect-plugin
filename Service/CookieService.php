@@ -11,16 +11,22 @@ declare(strict_types=1);
 
 namespace Tapbuy\RedirectTracking\Service;
 
-use Magento\Framework\Stdlib\CookieManagerInterface;
+use Magento\Framework\HTTP\PhpEnvironment\Request;
+use Magento\Framework\Stdlib\Cookie\CookieReaderInterface;
 use Tapbuy\RedirectTracking\Api\CookieInterface;
 use Psr\Log\LoggerInterface;
 
 class CookieService
 {
     /**
-     * @var CookieManagerInterface
+     * @var CookieReaderInterface
      */
-    private $cookieManager;
+    private $cookieReader;
+
+    /**
+     * @var Request
+     */
+    private $request;
 
     /**
      * @var CookieInterface
@@ -50,16 +56,19 @@ class CookieService
     /**
      * CookieService constructor.
      *
-     * @param CookieManagerInterface $cookieManager
+     * @param CookieReaderInterface $cookieReader
+     * @param Request $request
      * @param CookieInterface $cookie
      * @param LoggerInterface $logger
      */
     public function __construct(
-        CookieManagerInterface $cookieManager,
+        CookieReaderInterface $cookieReader,
+        Request $request,
         CookieInterface $cookie,
         LoggerInterface $logger
     ) {
-        $this->cookieManager = $cookieManager;
+        $this->cookieReader = $cookieReader;
+        $this->request = $request;
         $this->cookie = $cookie;
         $this->logger = $logger;
     }
@@ -169,19 +178,19 @@ class CookieService
     {
         $cookieNames = ['_ga', '_pcid'];
 
-        // Seed with exact-name CookieManager lookups first
+        // Seed with exact-name CookieReader lookups first
         foreach ($cookieNames as $cookieName) {
-            $cookieValue = $this->cookieManager->getCookie($cookieName);
+            $cookieValue = $this->cookieReader->getCookie($cookieName);
             if ($cookieValue !== null) {
                 $this->trackingCookies[$cookieName] = $cookieValue;
             }
         }
 
         // Collect prefix-matched cookies from browser and injected sources.
-        // $_COOKIE takes precedence over $this->cookies when the same key appears in both.
+        // Request cookies take precedence over $this->cookies when the same key appears in both.
         $sources = array_replace(
             $this->filterCookiesByPrefix($this->cookies, $cookieNames),
-            $this->filterCookiesByPrefix($_COOKIE, $cookieNames)
+            $this->filterCookiesByPrefix($this->getAllRequestCookies(), $cookieNames)
         );
 
         foreach ($sources as $name => $value) {
@@ -202,7 +211,7 @@ class CookieService
     {
         $cookiePrefixes = ['mage-cache-', 'mage-messages'];
 
-        foreach ($this->filterCookiesByPrefix($_COOKIE, $cookiePrefixes) as $name => $value) {
+        foreach ($this->filterCookiesByPrefix($this->getAllRequestCookies(), $cookiePrefixes) as $name => $value) {
             $this->logger->debug('getStoreCookies matched', ['cookieName' => $name, 'cookieValue' => $value]);
             $this->storeCookies[$name] = $value;
         }
@@ -214,6 +223,17 @@ class CookieService
         }
 
         return $this->storeCookies;
+    }
+
+    /**
+     * Returns all cookies from the current HTTP request as a flat name => value array.
+     *
+     * @return array
+     */
+    private function getAllRequestCookies(): array
+    {
+        $cookieHeader = $this->request->getCookies();
+        return $cookieHeader ? $cookieHeader->getArrayCopy() : [];
     }
 
     /**
