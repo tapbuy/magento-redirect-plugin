@@ -42,6 +42,7 @@ class PixelInputValidator
         'action'             => 'string',
         'cart_id'            => 'string',
         'test_id'            => 'string',
+        'variation_id'       => 'string',
         'timestamp'          => 'integer',
         'remove_test_cookie' => 'boolean',
     ];
@@ -53,11 +54,17 @@ class PixelInputValidator
     private const LOG_INJECTION_CHARS = ["\n", "\r", "\0"];
 
     /**
+     * @var JsonDecodeHelper
+     */
+    private $jsonDecodeHelper;
+
+    /**
      * @param JsonDecodeHelper $jsonDecodeHelper
      */
     public function __construct(
-        private readonly JsonDecodeHelper $jsonDecodeHelper
+        JsonDecodeHelper $jsonDecodeHelper
     ) {
+        $this->jsonDecodeHelper = $jsonDecodeHelper;
     }
 
     /**
@@ -139,9 +146,9 @@ class PixelInputValidator
      *
      * @param mixed  $value
      * @param string $expectedType 'string' | 'integer' | 'boolean'
-     * @return mixed|null
+     * @return mixed
      */
-    private function coerceValue(mixed $value, string $expectedType): mixed
+    private function coerceValue($value, string $expectedType)
     {
         switch ($expectedType) {
             case 'string':

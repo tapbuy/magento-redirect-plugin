@@ -91,8 +91,10 @@ class Track implements HttpGetActionInterface
         }
 
         try {
-            // Get pixel data from request
-            $encodedData = $this->request->getParam('data');
+            // Get pixel data from request — treat non-string values (e.g. ?data[]=...)
+            // as invalid rather than letting a TypeError surface from strict_types
+            $rawParam = $this->request->getParam('data');
+            $encodedData = is_string($rawParam) && $rawParam !== '' ? $rawParam : null;
 
             // Reject oversized payloads before any decode work
             if ($encodedData && !$this->pixelInputValidator->isInputSizeValid($encodedData)) {
@@ -107,6 +109,11 @@ class Track implements HttpGetActionInterface
             $cookies = [];
             foreach ($this->request->getParams() as $key => $value) {
                 if (strpos($key, 'cookie_') === 0) {
+                    // Ignore non-scalar values (e.g. cookie_foo[]=x) to avoid
+                    // "Array to string conversion" notices and garbage log entries
+                    if (!is_scalar($value)) {
+                        continue;
+                    }
                     $cookieName = substr($key, 7); // Remove 'cookie_' prefix
                     $cookies[$cookieName] = $this->pixelInputValidator->sanitizeCookieValue((string) $value);
                 }
@@ -116,9 +123,6 @@ class Track implements HttpGetActionInterface
             if (isset($cookies['tb-abtest-id'])) {
                 $this->helper->setABTestIdCookie($cookies['tb-abtest-id']);
             }
-
-            // Optionally: log or process all cookies as needed
-            // $this->logger->info('Pixel cookies', $cookies);
 
             // Continue with existing pixel data logic
             if ($pixelData && is_array($pixelData)) {
