@@ -140,11 +140,23 @@ class Service implements TapbuyServiceInterface
             );
 
             return false;
-        } catch (\InvalidArgumentException | \RuntimeException | \Exception $e) {
-            // \InvalidArgumentException: Json::unserialize() on a malformed API response
-            // \RuntimeException: general transport failures
-            // \Exception: Magento Curl client may throw bare \Exception — kept here as last resort
+        } catch (\InvalidArgumentException $e) {
+            // Json::unserialize() on a malformed API response
+            $this->logger->logException('Error parsing Tapbuy API response', $e, [
+                'endpoint' => $endpoint,
+            ]);
+
+            return false;
+        } catch (\RuntimeException $e) {
+            // General transport failures
             $this->logger->logException('Error sending Tapbuy API request', $e, [
+                'endpoint' => $endpoint,
+            ]);
+
+            return false;
+        } catch (\Exception $e) {
+            // Magento Curl client may throw bare \Exception — kept as last resort
+            $this->logger->logException('Unexpected error sending Tapbuy API request', $e, [
                 'endpoint' => $endpoint,
             ]);
 
