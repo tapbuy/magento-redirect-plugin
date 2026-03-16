@@ -106,7 +106,8 @@ class ABTest implements ABTestInterface
             }
 
             $this->helper->updateABTestCookie($result ? ($result['id'] ?? null) : null);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            // Tapbuy tracking only — must never disrupt the order flow
             $this->logger->logException('Error processing order transaction', $e, [
                 'order_id' => $order->getIncrementId(),
             ]);

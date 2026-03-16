@@ -86,8 +86,8 @@ class TraceIdProcessor implements ProcessorInterface
         try {
             $traceId = $this->tapbuyRequestDetector->getTraceId();
             return $traceId !== null ? $traceId : false;
-        } catch (\Exception $e) {
-            // Fail silently to avoid breaking logging
+        } catch (\Throwable $e) {
+            // Fail silently — must never break the logging pipeline
             return false;
         }
     }

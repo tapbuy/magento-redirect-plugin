@@ -111,7 +111,8 @@ class OrderSaveAfter implements ObserverInterface
             self::$processedOrderIds[$orderId] = true;
 
             $this->abTest->processOrderTransaction($order);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            // Tapbuy tracking only — must never disrupt the order flow
             $this->logger->logException('Error in Tapbuy order save processing', $e);
         }
     }

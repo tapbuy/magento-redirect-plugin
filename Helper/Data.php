@@ -254,7 +254,7 @@ class Data extends AbstractHelper implements DataHelperInterface
     {
         try {
             return $this->appState->getMode() === State::MODE_DEVELOPER;
-        } catch (\Exception $e) {
+        } catch (\RuntimeException $e) {
             // If we can't determine mode, assume production for security
             return false;
         }

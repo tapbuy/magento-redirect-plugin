@@ -236,7 +236,8 @@ class TokenAuthorization implements TokenAuthorizationInterface
             $userId = $this->userContext->getUserId();
 
             return $userId > 0 && in_array($userType, self::ACCEPTED_USER_TYPES);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            // Any error (including \TypeError from misconfigured framework calls) should deny access
             return false;
         }
     }
