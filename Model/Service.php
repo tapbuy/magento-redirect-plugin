@@ -140,8 +140,23 @@ class Service implements TapbuyServiceInterface
             );
 
             return false;
-        } catch (\Exception $e) {
+        } catch (\InvalidArgumentException $e) {
+            // Json::unserialize() on a malformed API response
+            $this->logger->logException('Error parsing Tapbuy API response', $e, [
+                'endpoint' => $endpoint,
+            ]);
+
+            return false;
+        } catch (\RuntimeException $e) {
+            // General transport failures
             $this->logger->logException('Error sending Tapbuy API request', $e, [
+                'endpoint' => $endpoint,
+            ]);
+
+            return false;
+        } catch (\Exception $e) {
+            // Magento Curl client may throw bare \Exception — kept as last resort
+            $this->logger->logException('Unexpected error sending Tapbuy API request', $e, [
                 'endpoint' => $endpoint,
             ]);
 
@@ -175,7 +190,7 @@ class Service implements TapbuyServiceInterface
             ];
 
             return $this->sendRequest('/ab-test/transaction', $payload);
-        } catch (\Exception $e) {
+        } catch (\RuntimeException $e) {
             $this->logger->logException('Error sending transaction to Tapbuy', $e, [
                 'order_id' => $order->getIncrementId(),
             ]);
@@ -224,7 +239,7 @@ class Service implements TapbuyServiceInterface
 
             $this->helper->updateABTestCookie(null);
             return ['redirect' => false];
-        } catch (\Exception $e) {
+        } catch (\RuntimeException $e) {
             $this->logger->logException('Error triggering A/B test', $e);
             $this->helper->updateABTestCookie(null);
             return ['redirect' => false];

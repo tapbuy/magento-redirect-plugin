@@ -9,6 +9,7 @@ use Magento\Framework\GraphQl\Query\Resolver\ContextInterface;
 use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
 use Magento\Framework\GraphQl\Exception\GraphQlInputException;
+use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\OrderPaymentRepositoryInterface;
 use Tapbuy\RedirectTracking\Api\ABTestInterface;
@@ -137,7 +138,13 @@ class ConfirmOrder implements ResolverInterface
             }
 
             return true;
-        } catch (\Exception $e) {
+        } catch (CouldNotSaveException $e) {
+            $this->logger->logException('ConfirmOrder: Failed to save payment tracking flag', $e, [
+                'order_number' => $orderNumber,
+                'ab_test_id' => $abTestId,
+            ]);
+            return true;
+        } catch (\RuntimeException $e) {
             $this->logger->logException('ConfirmOrder: Error processing order confirmation', $e, [
                 'order_number' => $orderNumber,
                 'ab_test_id' => $abTestId,

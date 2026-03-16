@@ -128,7 +128,7 @@ class Track implements HttpGetActionInterface
             if ($pixelData && is_array($pixelData)) {
                 $this->processPixelData($pixelData);
             }
-        } catch (\Exception $e) {
+        } catch (\RuntimeException $e) {
             $this->logger->logException('Pixel tracking error', $e, [
                 'data' => $this->request->getParam('data'),
             ]);
