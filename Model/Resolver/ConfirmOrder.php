@@ -98,6 +98,10 @@ class ConfirmOrder implements ResolverInterface
 
         try {
             if (!$orderNumber || !$abTestId) {
+                $this->logger->warning('ConfirmOrder: Missing required input fields', [
+                    'order_number' => $orderNumber,
+                    'ab_test_id' => $abTestId,
+                ]);
                 throw new GraphQlInputException(__('Both order_number and ab_test_id are required.'));
             }
 
