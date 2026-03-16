@@ -86,6 +86,9 @@ class ABTest implements ABTestInterface
 
         // Skip if this order has already been tracked during this request (e.g. direct GraphQL call)
         if ($order->getData(TapbuyConstants::ABTEST_TRACKING_FLAG)) {
+            $this->logger->debug('ABTest: Order already tracked during this request, skipping', [
+                'order_id' => $order->getIncrementId(),
+            ]);
             return;
         }
 
@@ -95,6 +98,11 @@ class ABTest implements ABTestInterface
             // Mark the order as tracked to prevent duplicate transmissions only on success
             if ($result) {
                 $order->setData(TapbuyConstants::ABTEST_TRACKING_FLAG, true);
+            } else {
+                $this->logger->warning('ABTest: Order transaction returned no result', [
+                    'order_id' => $order->getIncrementId(),
+                    'ab_test_id' => $abTestId,
+                ]);
             }
 
             $this->helper->updateABTestCookie($result ? ($result['id'] ?? null) : null);
