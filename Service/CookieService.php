@@ -170,9 +170,13 @@ class CookieService
     }
 
     /**
-     * Get tracking cookies for Tapbuy
+     * Get tracking cookies for Tapbuy.
      *
-     * @return array
+     * Collects analytics cookies (e.g. _ga, _pcid and their prefixed variants)
+     * from the CookieReader, injected cookies, and the raw HTTP request.
+     * Request cookies take precedence over injected ones when the same name appears in both.
+     *
+     * @return array<string, string> Cookie name => value map.
      */
     public function getTrackingCookies(): array
     {
@@ -203,9 +207,12 @@ class CookieService
     }
 
     /**
-     * Get store cookies for Tapbuy
+     * Get store cookies for Tapbuy.
      *
-     * @return array
+     * Collects Magento store-state cookies whose names start with 'mage-cache-' or
+     * 'mage-messages'. Injected cookies override browser cookies for the same name.
+     *
+     * @return array<string, string> Cookie name => value map.
      */
     public function getStoreCookies(): array
     {

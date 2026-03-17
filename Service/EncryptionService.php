@@ -59,10 +59,14 @@ class EncryptionService
     }
 
     /**
-     * Get encrypted key for Tapbuy
+     * Get encrypted key for Tapbuy.
      *
-     * @param \Magento\Quote\Api\Data\CartInterface|null $quote
-     * @return string
+     * Serializes session and cart data to JSON, then encrypts it with AES-256-GCM
+     * using the configured encryption key. Returns an empty string when the key
+     * is not configured or encryption fails.
+     *
+     * @param \Magento\Quote\Api\Data\CartInterface|null $quote Active quote, or null when unavailable.
+     * @return string Base64-encoded encrypted payload, or empty string on failure.
      */
     public function getTapbuyKey($quote): string
     {
@@ -80,10 +84,16 @@ class EncryptionService
     }
 
     /**
-     * Build encryption data from request and quote
+     * Build encryption data from request and quote.
      *
-     * @param \Magento\Quote\Api\Data\CartInterface|null $quote
-     * @return array
+     * Extracts the Bearer token from the Authorization header and the masked cart ID
+     * from the quote. Only the keys that are available at call-time are included.
+     *
+     * @param \Magento\Quote\Api\Data\CartInterface|null $quote Active quote, or null when unavailable.
+     * @return array{
+     *   session_id?: string,
+     *   cart_id?: string
+     * }
      */
     private function buildEncryptionData($quote): array
     {
