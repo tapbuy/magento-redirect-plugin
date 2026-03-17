@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Tapbuy\RedirectTracking\Model\Resolver;
 
+use Magento\Framework\Filesystem\Driver\File as FileDriver;
 use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Query\ResolverInterface;
 use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
@@ -42,18 +43,26 @@ class FetchLogs implements ResolverInterface
     private $logHandler;
 
     /**
+     * @var FileDriver
+     */
+    private $fileDriver;
+
+    /**
      * @param TokenAuthorizationInterface $tokenAuthorization
      * @param ConfigInterface $config
      * @param LogHandlerInterface $logHandler
+     * @param FileDriver $fileDriver
      */
     public function __construct(
         TokenAuthorizationInterface $tokenAuthorization,
         ConfigInterface $config,
-        LogHandlerInterface $logHandler
+        LogHandlerInterface $logHandler,
+        FileDriver $fileDriver
     ) {
         $this->tokenAuthorization = $tokenAuthorization;
         $this->config = $config;
         $this->logHandler = $logHandler;
+        $this->fileDriver = $fileDriver;
     }
 
     /**
@@ -106,12 +115,12 @@ class FetchLogs implements ResolverInterface
         $logFiles = $this->logHandler->getAllLogFiles();
 
         foreach ($logFiles as $logFile) {
-            if (!file_exists($logFile)) {
+            if (!$this->fileDriver->isExists($logFile)) {
                 continue;
             }
 
             // Open in read-only mode
-            $handle = fopen($logFile, 'r');
+            $handle = $this->fileDriver->fileOpen($logFile, 'r');
             if (!$handle) {
                 continue;
             }
@@ -119,8 +128,8 @@ class FetchLogs implements ResolverInterface
             try {
                 // Read all content
                 $content = '';
-                while (!feof($handle)) {
-                    $content .= fread($handle, 8192);
+                while (!$this->fileDriver->endOfFile($handle)) {
+                    $content .= $this->fileDriver->fileRead($handle, 8192);
                 }
 
                 // Parse JSON lines
@@ -140,7 +149,7 @@ class FetchLogs implements ResolverInterface
                 }
 
             } finally {
-                fclose($handle);
+                $this->fileDriver->fileClose($handle);
             }
         }
 
