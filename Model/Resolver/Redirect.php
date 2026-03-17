@@ -27,9 +27,9 @@ class Redirect implements ResolverInterface
      * @param RedirectInputValidator $inputValidator
      */
     public function __construct(
-        protected readonly TapbuyServiceInterface $service,
-        protected readonly ConfigInterface $config,
-        protected readonly DataHelperInterface $helper,
+        private readonly TapbuyServiceInterface $service,
+        private readonly ConfigInterface $config,
+        private readonly DataHelperInterface $helper,
         private readonly CartResolver $cartResolver,
         private readonly CartOwnershipValidator $cartOwnershipValidator,
         private readonly RedirectInputValidator $inputValidator
