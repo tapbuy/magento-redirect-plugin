@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Tapbuy\RedirectTracking\Plugin;
 
 use GraphQL\Error\Error;
+use Magento\Framework\Filesystem\Driver\File as FileDriver;
 use Magento\Framework\GraphQl\Query\ErrorHandlerInterface;
 use Tapbuy\RedirectTracking\Api\LoggerInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
@@ -34,15 +35,23 @@ class GraphQlExceptionLogger
     private LoggerInterface $logger;
 
     /**
+     * @var FileDriver
+     */
+    private FileDriver $fileDriver;
+
+    /**
      * @param TapbuyRequestDetectorInterface $tapbuyRequestDetector
      * @param LoggerInterface $logger
+     * @param FileDriver $fileDriver
      */
     public function __construct(
         TapbuyRequestDetectorInterface $tapbuyRequestDetector,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        FileDriver $fileDriver
     ) {
         $this->tapbuyRequestDetector = $tapbuyRequestDetector;
         $this->logger = $logger;
+        $this->fileDriver = $fileDriver;
     }
 
     /**
@@ -257,13 +266,14 @@ class GraphQlExceptionLogger
         int $numLines = 3,
         string $position = 'before'
     ): array {
-        if (!file_exists($filePath) || $lineNumber <= 0) {
+        if (!$this->fileDriver->isExists($filePath) || $lineNumber <= 0) {
             return [];
         }
 
         try {
             // Don't use FILE_SKIP_EMPTY_LINES as it breaks line numbering
-            $lines = file($filePath, FILE_IGNORE_NEW_LINES);
+            $content = $this->fileDriver->fileGetContents($filePath);
+            $lines = preg_split('/\r?\n/', rtrim($content, "\r\n"));
             if (!is_array($lines)) {
                 return [];
             }
@@ -300,13 +310,14 @@ class GraphQlExceptionLogger
      */
     private function getSourceCodeLine(string $filePath, int $lineNumber): ?string
     {
-        if (!file_exists($filePath) || $lineNumber <= 0) {
+        if (!$this->fileDriver->isExists($filePath) || $lineNumber <= 0) {
             return null;
         }
 
         try {
             // Don't use FILE_SKIP_EMPTY_LINES as it breaks line numbering
-            $lines = file($filePath, FILE_IGNORE_NEW_LINES);
+            $content = $this->fileDriver->fileGetContents($filePath);
+            $lines = preg_split('/\r?\n/', rtrim($content, "\r\n"));
             if (!is_array($lines) || !isset($lines[$lineNumber - 1])) {
                 return null;
             }
