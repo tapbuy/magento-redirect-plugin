@@ -19,26 +19,6 @@ use Psr\Log\LoggerInterface;
 class CookieService
 {
     /**
-     * @var CookieReaderInterface
-     */
-    private $cookieReader;
-
-    /**
-     * @var Request
-     */
-    private $request;
-
-    /**
-     * @var CookieInterface
-     */
-    private $cookie;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
      * @var array
      */
     private $cookies = [];
@@ -54,23 +34,17 @@ class CookieService
     private $storeCookies = [];
 
     /**
-     * CookieService constructor.
-     *
      * @param CookieReaderInterface $cookieReader
      * @param Request $request
      * @param CookieInterface $cookie
      * @param LoggerInterface $logger
      */
     public function __construct(
-        CookieReaderInterface $cookieReader,
-        Request $request,
-        CookieInterface $cookie,
-        LoggerInterface $logger
+        private readonly CookieReaderInterface $cookieReader,
+        private readonly Request $request,
+        private readonly CookieInterface $cookie,
+        private readonly LoggerInterface $logger
     ) {
-        $this->cookieReader = $cookieReader;
-        $this->request = $request;
-        $this->cookie = $cookie;
-        $this->logger = $logger;
     }
 
     /**

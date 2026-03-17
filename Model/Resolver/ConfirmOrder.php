@@ -23,33 +23,6 @@ class ConfirmOrder implements ResolverInterface
     private const TRACKING_FLAG = TapbuyConstants::ABTEST_TRACKING_FLAG;
 
     /**
-     * @var OrderLocatorInterface
-     */
-    private $orderLocator;
-
-    /**
-     * @var ABTestInterface
-     */
-    private $abTest;
-
-    /**
-     * @var ConfigInterface
-     */
-    private $config;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var OrderPaymentRepositoryInterface
-     */
-    private $paymentRepository;
-
-    /**
-     * ConfirmOrder constructor.
-     *
      * @param OrderLocatorInterface $orderLocator
      * @param ABTestInterface $abTest
      * @param ConfigInterface $config
@@ -57,17 +30,12 @@ class ConfirmOrder implements ResolverInterface
      * @param OrderPaymentRepositoryInterface $paymentRepository
      */
     public function __construct(
-        OrderLocatorInterface $orderLocator,
-        ABTestInterface $abTest,
-        ConfigInterface $config,
-        LoggerInterface $logger,
-        OrderPaymentRepositoryInterface $paymentRepository
+        private readonly OrderLocatorInterface $orderLocator,
+        private readonly ABTestInterface $abTest,
+        private readonly ConfigInterface $config,
+        private readonly LoggerInterface $logger,
+        private readonly OrderPaymentRepositoryInterface $paymentRepository
     ) {
-        $this->orderLocator = $orderLocator;
-        $this->abTest = $abTest;
-        $this->config = $config;
-        $this->logger = $logger;
-        $this->paymentRepository = $paymentRepository;
     }
 
     /**

@@ -20,17 +20,11 @@ use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
 class TapbuyRequestDetector implements TapbuyRequestDetectorInterface
 {
     /**
-     * @var RequestInterface
-     */
-    private RequestInterface $request;
-
-    /**
      * @param RequestInterface $request
      */
     public function __construct(
-        RequestInterface $request
+        private readonly RequestInterface $request
     ) {
-        $this->request = $request;
     }
 
     /**

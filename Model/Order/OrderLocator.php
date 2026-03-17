@@ -28,27 +28,13 @@ use Tapbuy\RedirectTracking\Api\Order\OrderLocatorInterface;
 class OrderLocator implements OrderLocatorInterface
 {
     /**
-     * @var OrderRepositoryInterface
-     */
-    private $orderRepository;
-
-    /**
-     * @var SearchCriteriaBuilderFactory
-     */
-    private $searchCriteriaBuilderFactory;
-
-    /**
-     * Constructor
-     *
      * @param OrderRepositoryInterface $orderRepository
      * @param SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory
      */
     public function __construct(
-        OrderRepositoryInterface $orderRepository,
-        SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory
+        private readonly OrderRepositoryInterface $orderRepository,
+        private readonly SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory
     ) {
-        $this->orderRepository = $orderRepository;
-        $this->searchCriteriaBuilderFactory = $searchCriteriaBuilderFactory;
     }
 
     /**

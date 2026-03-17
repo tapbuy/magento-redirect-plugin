@@ -28,41 +28,17 @@ class FetchLogs implements ResolverInterface
     private const ACL_RESOURCE = TokenAuthorizationInterface::TAPBUY_LOGS;
 
     /**
-     * @var TokenAuthorizationInterface
-     */
-    private $tokenAuthorization;
-
-    /**
-     * @var ConfigInterface
-     */
-    private $config;
-
-    /**
-     * @var LogHandlerInterface
-     */
-    private $logHandler;
-
-    /**
-     * @var FileDriver
-     */
-    private $fileDriver;
-
-    /**
      * @param TokenAuthorizationInterface $tokenAuthorization
      * @param ConfigInterface $config
      * @param LogHandlerInterface $logHandler
      * @param FileDriver $fileDriver
      */
     public function __construct(
-        TokenAuthorizationInterface $tokenAuthorization,
-        ConfigInterface $config,
-        LogHandlerInterface $logHandler,
-        FileDriver $fileDriver
+        private readonly TokenAuthorizationInterface $tokenAuthorization,
+        private readonly ConfigInterface $config,
+        private readonly LogHandlerInterface $logHandler,
+        private readonly FileDriver $fileDriver
     ) {
-        $this->tokenAuthorization = $tokenAuthorization;
-        $this->config = $config;
-        $this->logHandler = $logHandler;
-        $this->fileDriver = $fileDriver;
     }
 
     /**

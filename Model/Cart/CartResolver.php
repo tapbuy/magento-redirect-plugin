@@ -57,27 +57,6 @@ use Tapbuy\RedirectTracking\Api\Cart\CartResolverInterface;
 class CartResolver implements CartResolverInterface
 {
     /**
-     * Service for converting masked quote IDs to numeric quote IDs
-     *
-     * @var MaskedQuoteIdToQuoteIdInterface
-     */
-    private $maskedQuoteIdToQuoteId;
-
-    /**
-     * Repository for loading and managing cart/quote entities
-     *
-     * @var CartRepositoryInterface
-     */
-    private $cartRepository;
-
-    /**
-     * Factory for creating quote ID mask models (for reverse lookup: numeric -> masked)
-     *
-     * @var QuoteIdMaskFactory
-     */
-    private $quoteIdMaskFactory;
-
-    /**
      * CartResolver constructor.
      *
      * @param MaskedQuoteIdToQuoteIdInterface $maskedQuoteIdToQuoteId Service for masked ID conversion
@@ -85,13 +64,10 @@ class CartResolver implements CartResolverInterface
      * @param QuoteIdMaskFactory $quoteIdMaskFactory Factory for reverse masked ID lookup
      */
     public function __construct(
-        MaskedQuoteIdToQuoteIdInterface $maskedQuoteIdToQuoteId,
-        CartRepositoryInterface $cartRepository,
-        QuoteIdMaskFactory $quoteIdMaskFactory
+        private readonly MaskedQuoteIdToQuoteIdInterface $maskedQuoteIdToQuoteId,
+        private readonly CartRepositoryInterface $cartRepository,
+        private readonly QuoteIdMaskFactory $quoteIdMaskFactory
     ) {
-        $this->maskedQuoteIdToQuoteId = $maskedQuoteIdToQuoteId;
-        $this->cartRepository = $cartRepository;
-        $this->quoteIdMaskFactory = $quoteIdMaskFactory;
     }
 
     /**

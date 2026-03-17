@@ -37,35 +37,15 @@ class OrderSaveAfter implements ObserverInterface
     private static array $processedOrderIds = [];
 
     /**
-     * @var ConfigInterface
-     */
-    private $config;
-
-    /**
-     * @var ABTestInterface
-     */
-    private $abTest;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * OrderSaveAfter constructor.
-     *
      * @param ConfigInterface $config
      * @param ABTestInterface $abTest
      * @param LoggerInterface $logger
      */
     public function __construct(
-        ConfigInterface $config,
-        ABTestInterface $abTest,
-        LoggerInterface $logger
+        private readonly ConfigInterface $config,
+        private readonly ABTestInterface $abTest,
+        private readonly LoggerInterface $logger
     ) {
-        $this->config = $config;
-        $this->abTest = $abTest;
-        $this->logger = $logger;
     }
 
     /**

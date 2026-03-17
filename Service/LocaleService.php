@@ -17,27 +17,13 @@ use Tapbuy\RedirectTracking\Api\ConfigInterface;
 class LocaleService
 {
     /**
-     * @var Resolver
-     */
-    private $localeResolver;
-
-    /**
-     * @var ConfigInterface
-     */
-    private $config;
-
-    /**
-     * LocaleService constructor.
-     *
      * @param Resolver $localeResolver
      * @param ConfigInterface $config
      */
     public function __construct(
-        Resolver $localeResolver,
-        ConfigInterface $config
+        private readonly Resolver $localeResolver,
+        private readonly ConfigInterface $config
     ) {
-        $this->localeResolver = $localeResolver;
-        $this->config = $config;
     }
 
     /**
