@@ -177,8 +177,8 @@ class Track implements HttpGetActionInterface
      */
     private function createPixelResponse()
     {
-        // 1x1 transparent GIF in base64
-        $gifData = base64_decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
+        // 1x1 transparent GIF
+        $gifData = hex2bin('47494638396101000100800000000000ffffff21f90401000000002c000000000100010000020144003b');
 
         $response = $this->rawFactory->create();
         $response->setHeader('Content-Type', 'image/gif');
