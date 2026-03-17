@@ -47,12 +47,21 @@ class PixelService
     }
 
     /**
-     * Generate pixel data for A/B test tracking
+     * Generate pixel data for A/B test tracking.
      *
-     * @param string $cartId
-     * @param array $testResult
-     * @param string $action
-     * @return array
+     * @param string $cartId Masked or numeric cart identifier.
+     * @param array $testResult A/B test result data; may contain an optional 'id'
+     *     key, which is used to populate both the 'test_id' and 'variation_id'
+     *     fields in the returned payload.
+     * @param string $action Tracking action label (e.g. 'redirect_check').
+     * @return array{
+     *   cart_id: string,
+     *   test_id: string|null,        // Derived from $testResult['id'] when present.
+     *   action: string,
+     *   timestamp: int,
+     *   variation_id: string|null,   // Mirrors test_id; also derived from $testResult['id'].
+     *   remove_test_cookie: bool
+     * }
      */
     public function generatePixelData(
         string $cartId,
