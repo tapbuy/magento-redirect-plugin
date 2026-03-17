@@ -26,7 +26,7 @@ class TapbuyLogger extends Logger implements LoggerInterface
      * @param array $handlers
      * @param array $processors
      */
-    public function __construct(
+    public function __construct( // phpcs:ignore Generic.CodeAnalysis.UselessOverridingMethod.Found
         $name = TapbuyConstants::LOGGER_CHANNEL_NAME,
         array $handlers = [],
         array $processors = []

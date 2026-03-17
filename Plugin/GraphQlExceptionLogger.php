@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Tapbuy\RedirectTracking\Plugin;
 
 use GraphQL\Error\Error;
+use Magento\Framework\Filesystem\Driver\File as FileDriver;
 use Magento\Framework\GraphQl\Query\ErrorHandlerInterface;
 use Tapbuy\RedirectTracking\Api\LoggerInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
@@ -34,15 +35,23 @@ class GraphQlExceptionLogger
     private LoggerInterface $logger;
 
     /**
+     * @var FileDriver
+     */
+    private FileDriver $fileDriver;
+
+    /**
      * @param TapbuyRequestDetectorInterface $tapbuyRequestDetector
      * @param LoggerInterface $logger
+     * @param FileDriver $fileDriver
      */
     public function __construct(
         TapbuyRequestDetectorInterface $tapbuyRequestDetector,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        FileDriver $fileDriver
     ) {
         $this->tapbuyRequestDetector = $tapbuyRequestDetector;
         $this->logger = $logger;
+        $this->fileDriver = $fileDriver;
     }
 
     /**
@@ -91,7 +100,9 @@ class GraphQlExceptionLogger
                             'file' => $this->normalizePath($previousError->getFile()),
                             'line' => $previousError->getLine(),
                             'stacktrace' => $previousError->getTraceAsString(),
-                            'stacktrace_with_context' => json_encode($this->enrichStacktraceWithContext($previousError)),
+                            'stacktrace_with_context' => json_encode(
+                                $this->enrichStacktraceWithContext($previousError)
+                            ),
                         ];
 
                         // Keep previous_exception for backward compatibility
@@ -114,7 +125,9 @@ class GraphQlExceptionLogger
                         'file' => $this->normalizePath($error->getFile()),
                         'line' => $error->getLine(),
                         'stacktrace' => $error->getTraceAsString(),
-                        'stacktrace_with_context' => json_encode($this->enrichStacktraceWithContext($error)),
+                        'stacktrace_with_context' => json_encode(
+                            $this->enrichStacktraceWithContext($error)
+                        ),
                     ];
 
                     // Keep flat fields for backward compatibility
@@ -138,7 +151,7 @@ class GraphQlExceptionLogger
                             'error_code' => $e->getCode(),
                         ]
                     );
-                } catch (\Throwable $logException) {
+                } catch (\Throwable $logException) { // phpcs:ignore Magento2.CodeAnalysis.EmptyBlock.DetectedCatch
                     // Double failure - give up silently
                 }
             }
@@ -164,9 +177,19 @@ class GraphQlExceptionLogger
             'line' => $exception->getLine(),
             'class' => get_class($exception),
             'function' => 'throw',
-            'pre_context' => $this->getSourceCodeLines($exception->getFile(), $exception->getLine(), $contextLines, 'before'),
+            'pre_context' => $this->getSourceCodeLines(
+                $exception->getFile(),
+                $exception->getLine(),
+                $contextLines,
+                'before'
+            ),
             'context_line' => $this->getSourceCodeLine($exception->getFile(), $exception->getLine()),
-            'post_context' => $this->getSourceCodeLines($exception->getFile(), $exception->getLine(), $contextLines, 'after'),
+            'post_context' => $this->getSourceCodeLines(
+                $exception->getFile(),
+                $exception->getLine(),
+                $contextLines,
+                'after'
+            ),
         ];
 
         // Add frames from exception trace
@@ -180,9 +203,19 @@ class GraphQlExceptionLogger
                 'line' => $trace['line'] ?? 0,
                 'class' => $trace['class'] ?? '',
                 'function' => $trace['function'] ?? '',
-                'pre_context' => $this->getSourceCodeLines($trace['file'], $trace['line'] ?? 0, $contextLines, 'before'),
+                'pre_context' => $this->getSourceCodeLines(
+                    $trace['file'],
+                    $trace['line'] ?? 0,
+                    $contextLines,
+                    'before'
+                ),
                 'context_line' => $this->getSourceCodeLine($trace['file'], $trace['line'] ?? 0),
-                'post_context' => $this->getSourceCodeLines($trace['file'], $trace['line'] ?? 0, $contextLines, 'after'),
+                'post_context' => $this->getSourceCodeLines(
+                    $trace['file'],
+                    $trace['line'] ?? 0,
+                    $contextLines,
+                    'after'
+                ),
             ];
         }
 
@@ -191,6 +224,7 @@ class GraphQlExceptionLogger
 
     /**
      * Normalize file paths to be environment-independent and readable
+     *
      * Converts Docker mount paths to portable paths
      *
      * @param string $filePath
@@ -226,15 +260,20 @@ class GraphQlExceptionLogger
      * @param string $position 'before' or 'after'
      * @return array
      */
-    private function getSourceCodeLines(string $filePath, int $lineNumber, int $numLines = 3, string $position = 'before'): array
-    {
-        if (!file_exists($filePath) || $lineNumber <= 0) {
+    private function getSourceCodeLines(
+        string $filePath,
+        int $lineNumber,
+        int $numLines = 3,
+        string $position = 'before'
+    ): array {
+        if (!$this->fileDriver->isExists($filePath) || $lineNumber <= 0) {
             return [];
         }
 
         try {
             // Don't use FILE_SKIP_EMPTY_LINES as it breaks line numbering
-            $lines = file($filePath, FILE_IGNORE_NEW_LINES);
+            $content = $this->fileDriver->fileGetContents($filePath);
+            $lines = preg_split('/\r?\n/', rtrim($content, "\r\n"));
             if (!is_array($lines)) {
                 return [];
             }
@@ -271,13 +310,14 @@ class GraphQlExceptionLogger
      */
     private function getSourceCodeLine(string $filePath, int $lineNumber): ?string
     {
-        if (!file_exists($filePath) || $lineNumber <= 0) {
+        if (!$this->fileDriver->isExists($filePath) || $lineNumber <= 0) {
             return null;
         }
 
         try {
             // Don't use FILE_SKIP_EMPTY_LINES as it breaks line numbering
-            $lines = file($filePath, FILE_IGNORE_NEW_LINES);
+            $content = $this->fileDriver->fileGetContents($filePath);
+            $lines = preg_split('/\r?\n/', rtrim($content, "\r\n"));
             if (!is_array($lines) || !isset($lines[$lineNumber - 1])) {
                 return null;
             }

@@ -40,7 +40,9 @@ class JsonDecodeHelper
             return [];
         }
 
+        // phpcs:disable Magento2.Functions.DiscouragedFunction.Discouraged
         $string = $base64 ? base64_decode($input, true) : $input;
+        // phpcs:enable Magento2.Functions.DiscouragedFunction.Discouraged
         if ($string === false) {
             return [];
         }

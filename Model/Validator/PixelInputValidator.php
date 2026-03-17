@@ -115,8 +115,8 @@ class PixelInputValidator
     /**
      * Filter and coerce a decoded data array against ALLOWED_FIELDS.
      *
-     * @param array<string, mixed> $data
-     * @return array<string, mixed>
+     * @param array $data
+     * @return array
      */
     private function sanitizeData(array $data): array
     {
