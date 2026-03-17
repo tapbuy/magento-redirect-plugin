@@ -239,7 +239,7 @@ class CookieService
     /**
      * Filter an array of cookies keeping only entries whose names start with one of the given prefixes.
      *
-     * @param array $source  Source array of cookie name => value pairs
+     * @param array $source   Source array of cookie name => value pairs
      * @param array $prefixes List of allowed name prefixes
      * @return array Filtered array containing only matching entries
      */
