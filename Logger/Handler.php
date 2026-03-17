@@ -137,7 +137,7 @@ class Handler extends StreamHandler implements LogHandlerInterface
 
         // Write directly to file
         if ($formatted && !empty($this->filePath)) {
-            file_put_contents($this->filePath, $formatted, FILE_APPEND | LOCK_EX);
+            $this->filesystem->filePutContents($this->filePath, $formatted, FILE_APPEND | LOCK_EX);
         }
     }
 
@@ -179,6 +179,6 @@ class Handler extends StreamHandler implements LogHandlerInterface
      */
     public function getAllLogFiles(): array
     {
-        return file_exists($this->filePath) ? [$this->filePath] : [];
+        return $this->filesystem->isExists($this->filePath) ? [$this->filePath] : [];
     }
 }
