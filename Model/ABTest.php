@@ -23,33 +23,6 @@ use Magento\Sales\Model\Order;
 class ABTest implements ABTestInterface
 {
     /**
-     * @var ConfigInterface
-     */
-    private $config;
-
-    /**
-     * @var TapbuyServiceInterface
-     */
-    private $service;
-
-    /**
-     * @var DataHelperInterface
-     */
-    private $helper;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var TapbuyRequestDetectorInterface
-     */
-    private $requestDetector;
-
-    /**
-     * ABTest constructor.
-     *
      * @param ConfigInterface $config
      * @param TapbuyServiceInterface $service
      * @param DataHelperInterface $helper
@@ -57,27 +30,22 @@ class ABTest implements ABTestInterface
      * @param TapbuyRequestDetectorInterface $requestDetector
      */
     public function __construct(
-        ConfigInterface $config,
-        TapbuyServiceInterface $service,
-        DataHelperInterface $helper,
-        LoggerInterface $logger,
-        TapbuyRequestDetectorInterface $requestDetector
+        private readonly ConfigInterface $config,
+        private readonly TapbuyServiceInterface $service,
+        private readonly DataHelperInterface $helper,
+        private readonly LoggerInterface $logger,
+        private readonly TapbuyRequestDetectorInterface $requestDetector
     ) {
-        $this->config = $config;
-        $this->service = $service;
-        $this->helper = $helper;
-        $this->logger = $logger;
-        $this->requestDetector = $requestDetector;
     }
 
     /**
      * Process order transaction after order placement
      *
      * @param Order $order
-     * @param int|null $abTestId Used with tapbuyConfirmOrder GraphQL mutation for headless implementations
+     * @param string|null $abTestId Used with tapbuyConfirmOrder GraphQL mutation for headless implementations
      * @return bool True if a transaction was actually sent, false if skipped or failed
      */
-    public function processOrderTransaction($order, $abTestId = null)
+    public function processOrderTransaction(Order $order, ?string $abTestId = null): bool
     {
         // Skip if Tapbuy is disabled or this is a Tapbuy-originated request
         if (!$this->config->isEnabled() || $this->requestDetector->isTapbuyCall()) {

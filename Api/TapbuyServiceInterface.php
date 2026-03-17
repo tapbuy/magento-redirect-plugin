@@ -22,16 +22,16 @@ interface TapbuyServiceInterface
      * @param array $payload
      * @return array|bool
      */
-    public function sendRequest($endpoint, $payload);
+    public function sendRequest(string $endpoint, array $payload): array|bool;
 
     /**
      * Send transaction data to Tapbuy
      *
      * @param Order $order
-     * @param int|null $abTestId
+     * @param string|null $abTestId
      * @return array|bool
      */
-    public function sendTransactionForOrder($order, $abTestId = null);
+    public function sendTransactionForOrder(Order $order, ?string $abTestId = null): array|bool;
 
     /**
      * Trigger A/B test
@@ -39,7 +39,11 @@ interface TapbuyServiceInterface
      * @param CartInterface $quote
      * @param bool|null $forceRedirect
      * @param string|null $referer
-     * @return array|bool
+     * @return array
      */
-    public function triggerABTest($quote, $forceRedirect = null, $referer = null);
+    public function triggerABTest(
+        CartInterface $quote,
+        ?bool $forceRedirect = null,
+        ?string $referer = null
+    ): array;
 }

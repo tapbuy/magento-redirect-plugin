@@ -13,49 +13,24 @@ namespace Tapbuy\RedirectTracking\Service;
 
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Quote\Api\Data\CartInterface;
 use Tapbuy\RedirectTracking\Api\Cart\CartResolverInterface;
 use Tapbuy\RedirectTracking\Api\ConfigInterface;
 
 class EncryptionService
 {
     /**
-     * @var ConfigInterface
-     */
-    private $config;
-
-    /**
-     * @var RequestInterface
-     */
-    private $request;
-
-    /**
-     * @var Json
-     */
-    private $json;
-
-    /**
-     * @var CartResolverInterface
-     */
-    private $cartResolver;
-
-    /**
-     * EncryptionService constructor.
-     *
      * @param ConfigInterface $config
      * @param RequestInterface $request
      * @param Json $json
      * @param CartResolverInterface $cartResolver
      */
     public function __construct(
-        ConfigInterface $config,
-        RequestInterface $request,
-        Json $json,
-        CartResolverInterface $cartResolver
+        private readonly ConfigInterface $config,
+        private readonly RequestInterface $request,
+        private readonly Json $json,
+        private readonly CartResolverInterface $cartResolver
     ) {
-        $this->config = $config;
-        $this->request = $request;
-        $this->json = $json;
-        $this->cartResolver = $cartResolver;
     }
 
     /**
@@ -65,11 +40,11 @@ class EncryptionService
      * using the configured encryption key. Returns an empty string when the key
      * is not configured.
      *
-     * @param \Magento\Quote\Api\Data\CartInterface|null $quote Active quote, or null when unavailable.
+     * @param CartInterface|null $quote Active quote, or null when unavailable.
      * @return string Base64-encoded encrypted payload, or empty string when no encryption key is configured.
      * @throws \Exception If encryption fails.
      */
-    public function getTapbuyKey($quote): string
+    public function getTapbuyKey(?CartInterface $quote): string
     {
         $data = $this->buildEncryptionData($quote);
 
@@ -90,13 +65,13 @@ class EncryptionService
      * Extracts the Bearer token from the Authorization header and the masked cart ID
      * from the quote. Only the keys that are available at call-time are included.
      *
-     * @param \Magento\Quote\Api\Data\CartInterface|null $quote Active quote, or null when unavailable.
+     * @param CartInterface|null $quote Active quote, or null when unavailable.
      * @return array{
      *   session_id?: string,
      *   cart_id?: string
      * }
      */
-    private function buildEncryptionData($quote): array
+    private function buildEncryptionData(?CartInterface $quote): array
     {
         $data = [];
 

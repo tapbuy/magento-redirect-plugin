@@ -25,27 +25,13 @@ class Config implements ConfigInterface
     public const XML_PATH_ORDER_CONFIRMATION_MODE = 'tapbuy/tracking/order_confirmation_mode';
 
     /**
-     * @var ScopeConfigInterface
-     */
-    private $scopeConfig;
-
-    /**
-     * @var EncryptorInterface
-     */
-    private $encryptor;
-
-    /**
-     * Config constructor.
-     *
      * @param ScopeConfigInterface $scopeConfig
      * @param EncryptorInterface $encryptor
      */
     public function __construct(
-        ScopeConfigInterface $scopeConfig,
-        EncryptorInterface $encryptor
+        private readonly ScopeConfigInterface $scopeConfig,
+        private readonly EncryptorInterface $encryptor
     ) {
-        $this->scopeConfig = $scopeConfig;
-        $this->encryptor = $encryptor;
     }
 
     /**
@@ -54,7 +40,7 @@ class Config implements ConfigInterface
      * @param int|null $storeId
      * @return bool
      */
-    public function isEnabled($storeId = null)
+    public function isEnabled(?int $storeId = null): bool
     {
         return $this->scopeConfig->isSetFlag(
             self::XML_PATH_ENABLED,
@@ -69,9 +55,9 @@ class Config implements ConfigInterface
      * @param int|null $storeId
      * @return string
      */
-    public function getApiUrl($storeId = null)
+    public function getApiUrl(?int $storeId = null): string
     {
-        return $this->scopeConfig->getValue(
+        return (string) $this->scopeConfig->getValue(
             self::XML_PATH_API_URL,
             ScopeInterface::SCOPE_STORE,
             $storeId
@@ -84,7 +70,7 @@ class Config implements ConfigInterface
      * @param int|null $storeId
      * @return string
      */
-    public function getEncryptionKey($storeId = null)
+    public function getEncryptionKey(?int $storeId = null): string
     {
         $encryptedKey = $this->scopeConfig->getValue(
             self::XML_PATH_ENCRYPTION_KEY,
@@ -101,7 +87,7 @@ class Config implements ConfigInterface
      * @param int|null $storeId
      * @return string
      */
-    public function getLocaleFormat($storeId = null)
+    public function getLocaleFormat(?int $storeId = null): string
     {
         return $this->scopeConfig->getValue(
             self::XML_PATH_LOCALE_FORMAT,
@@ -116,7 +102,7 @@ class Config implements ConfigInterface
      * @param int|null $storeId
      * @return string
      */
-    public function getOrderConfirmationMode($storeId = null)
+    public function getOrderConfirmationMode(?int $storeId = null): string
     {
         return $this->scopeConfig->getValue(
             self::XML_PATH_ORDER_CONFIRMATION_MODE,

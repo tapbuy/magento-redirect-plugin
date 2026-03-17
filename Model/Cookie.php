@@ -20,43 +20,17 @@ use Tapbuy\RedirectTracking\Api\CookieInterface;
 class Cookie implements CookieInterface
 {
     /**
-     * @var CookieManagerInterface
-     */
-    private $cookieManager;
-
-    /**
-     * @var CookieMetadataFactory
-     */
-    private $cookieMetadataFactory;
-
-    /**
-     * @var SessionManagerInterface
-     */
-    private $sessionManager;
-
-    /**
-     * @var RequestInterface
-     */
-    private $request;
-
-    /**
-     * Cookie constructor.
-     *
      * @param CookieManagerInterface $cookieManager
      * @param CookieMetadataFactory $cookieMetadataFactory
      * @param SessionManagerInterface $sessionManager
      * @param RequestInterface $request
      */
     public function __construct(
-        CookieManagerInterface $cookieManager,
-        CookieMetadataFactory $cookieMetadataFactory,
-        SessionManagerInterface $sessionManager,
-        RequestInterface $request
+        private readonly CookieManagerInterface $cookieManager,
+        private readonly CookieMetadataFactory $cookieMetadataFactory,
+        private readonly SessionManagerInterface $sessionManager,
+        private readonly RequestInterface $request
     ) {
-        $this->cookieManager = $cookieManager;
-        $this->cookieMetadataFactory = $cookieMetadataFactory;
-        $this->sessionManager = $sessionManager;
-        $this->request = $request;
     }
 
     /**
@@ -69,8 +43,14 @@ class Cookie implements CookieInterface
      * @param int|null $duration Cookie duration in seconds
      * @return void
      */
-    public function setCookie($name, $value, $httpOnly = true, $secure = true, $duration = null)
-    {
+    public function setCookie(
+        string $name,
+        string $value,
+        bool $httpOnly = true,
+        bool $secure = true,
+        ?int $duration = null
+    ): void {
+
         $metadata = $this->cookieMetadataFactory->createPublicCookieMetadata()
             ->setDuration($duration ?: self::COOKIE_DURATION)
             ->setPath($this->sessionManager->getCookiePath())
@@ -89,7 +69,7 @@ class Cookie implements CookieInterface
      * @param bool $secure Secure flag
      * @return void
      */
-    public function removeCookie($name, $httpOnly = true, $secure = true)
+    public function removeCookie(string $name, bool $httpOnly = true, bool $secure = true): void
     {
         $metadata = $this->cookieMetadataFactory->createPublicCookieMetadata()
             ->setPath($this->sessionManager->getCookiePath())
@@ -106,7 +86,7 @@ class Cookie implements CookieInterface
      * @param string $name Cookie name
      * @return string|null
      */
-    public function getCookie($name)
+    public function getCookie(string $name): ?string
     {
         return $this->cookieManager->getCookie($name);
     }
@@ -131,7 +111,7 @@ class Cookie implements CookieInterface
      * @param string $value
      * @return void
      */
-    public function setABTestIdCookie($value)
+    public function setABTestIdCookie(string $value): void
     {
         $this->setCookie(self::COOKIE_NAME_ABTEST_ID, $value, false, $this->isCookieSecure());
     }

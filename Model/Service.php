@@ -13,6 +13,7 @@ namespace Tapbuy\RedirectTracking\Model;
 
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Quote\Api\Data\CartInterface;
 use Tapbuy\RedirectTracking\Api\ConfigInterface;
 use Tapbuy\RedirectTracking\Api\DataHelperInterface;
 use Tapbuy\RedirectTracking\Api\LoggerInterface;
@@ -25,48 +26,6 @@ use Magento\Sales\Model\Order;
 class Service implements TapbuyServiceInterface
 {
     /**
-     * @var ConfigInterface
-     */
-    private $config;
-
-    /**
-     * @var Curl
-     */
-    private $curl;
-
-    /**
-     * @var Json
-     */
-    private $json;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var DataHelperInterface
-     */
-    private $helper;
-
-    /**
-     * @var RequestInterface
-     */
-    private $request;
-
-    /**
-     * @var UrlInterface
-     */
-    private $urlBuilder;
-
-    /**
-     * @var TapbuyRequestDetectorInterface
-     */
-    private $requestDetector;
-
-    /**
-     * Service constructor.
-     *
      * @param ConfigInterface $config
      * @param Curl $curl
      * @param Json $json
@@ -77,23 +36,15 @@ class Service implements TapbuyServiceInterface
      * @param TapbuyRequestDetectorInterface $requestDetector
      */
     public function __construct(
-        ConfigInterface $config,
-        Curl $curl,
-        Json $json,
-        LoggerInterface $logger,
-        DataHelperInterface $helper,
-        RequestInterface $request,
-        UrlInterface $urlBuilder,
-        TapbuyRequestDetectorInterface $requestDetector
+        private readonly ConfigInterface $config,
+        private readonly Curl $curl,
+        private readonly Json $json,
+        private readonly LoggerInterface $logger,
+        private readonly DataHelperInterface $helper,
+        private readonly RequestInterface $request,
+        private readonly UrlInterface $urlBuilder,
+        private readonly TapbuyRequestDetectorInterface $requestDetector
     ) {
-        $this->config = $config;
-        $this->curl = $curl;
-        $this->json = $json;
-        $this->logger = $logger;
-        $this->helper = $helper;
-        $this->request = $request;
-        $this->urlBuilder = $urlBuilder;
-        $this->requestDetector = $requestDetector;
     }
 
     /**
@@ -103,7 +54,7 @@ class Service implements TapbuyServiceInterface
      * @param array $payload
      * @return array|bool
      */
-    public function sendRequest($endpoint, $payload)
+    public function sendRequest(string $endpoint, array $payload): array|bool
     {
         if (!$this->config->isEnabled()) {
             return false;
@@ -172,10 +123,10 @@ class Service implements TapbuyServiceInterface
      * Send transaction data to Tapbuy
      *
      * @param Order $order
-     * @param int|null $abTestId Used with tapbuyConfirmOrder GraphQL mutation for headless implementations
+     * @param string|null $abTestId Used with tapbuyConfirmOrder GraphQL mutation for headless implementations
      * @return array|bool
      */
-    public function sendTransactionForOrder($order, $abTestId = null)
+    public function sendTransactionForOrder(Order $order, ?string $abTestId = null): array|bool
     {
         if (!$this->config->isEnabled() || $this->requestDetector->isTapbuyCall()) {
             return false;
@@ -220,10 +171,14 @@ class Service implements TapbuyServiceInterface
      * @param \Magento\Quote\Api\Data\CartInterface $quote
      * @param bool|null $forceRedirect
      * @param string|null $referer
-     * @return array|bool
+     * @return array
      */
-    public function triggerABTest($quote, $forceRedirect = null, $referer = null)
-    {
+    public function triggerABTest(
+        CartInterface $quote,
+        ?bool $forceRedirect = null,
+        ?string $referer = null
+    ): array {
+
         if (!$this->config->isEnabled() || $this->requestDetector->isTapbuyCall()) {
             return ['redirect' => false];
         }
