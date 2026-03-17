@@ -171,13 +171,13 @@ class Service implements TapbuyServiceInterface
      * @param \Magento\Quote\Api\Data\CartInterface $quote
      * @param bool|null $forceRedirect
      * @param string|null $referer
-     * @return array|bool
+     * @return array
      */
     public function triggerABTest(
         CartInterface $quote,
         ?bool $forceRedirect = null,
         ?string $referer = null
-    ): array|bool {
+    ): array {
 
         if (!$this->config->isEnabled() || $this->requestDetector->isTapbuyCall()) {
             return ['redirect' => false];
