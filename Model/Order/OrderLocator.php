@@ -74,7 +74,7 @@ class OrderLocator implements OrderLocatorInterface
         // Auto mode: try increment ID first to preserve backwards compatibility and avoid collisions.
         try {
             return $this->getByIncrementId($normalizedIdentifier, $identifier);
-        } catch (NoSuchEntityException $exception) {
+        } catch (NoSuchEntityException $exception) { // phpcs:ignore Magento2.CodeAnalysis.EmptyBlock.DetectedCatch
             // Intentionally empty - fall back to entity ID if increment ID lookup fails
             // This allows numeric identifiers to work as either increment or entity IDs
         }
