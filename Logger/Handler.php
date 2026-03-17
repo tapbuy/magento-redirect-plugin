@@ -83,7 +83,9 @@ class Handler extends StreamHandler implements LogHandlerInterface
         // Handle enriched stacktrace with source code context (preferred)
         if (isset($context['exception']['stacktrace_with_context']) && !isset($context['stacktrace_with_context'])) {
             if ($isLogRecord) {
-                $context = array_merge($context, ['stacktrace_with_context' => $context['exception']['stacktrace_with_context']]);
+                $context = array_merge($context, [
+                    'stacktrace_with_context' => $context['exception']['stacktrace_with_context']
+                ]);
                 $record = $record->with(context: $context);
             } else {
                 $record['context']['stacktrace_with_context'] = $context['exception']['stacktrace_with_context'];
@@ -110,7 +112,9 @@ class Handler extends StreamHandler implements LogHandlerInterface
         } elseif (isset($context['exception']['stacktrace']) && !isset($context['stacktrace'])) {
             // Use exception stacktrace if available (preferred over debug_backtrace)
             if ($isLogRecord) {
-                $record = $record->with(context: array_merge($context, ['stacktrace' => $context['exception']['stacktrace']]));
+                $record = $record->with(context: array_merge($context, [
+                    'stacktrace' => $context['exception']['stacktrace']
+                ]));
             } else {
                 $record['context']['stacktrace'] = $context['exception']['stacktrace'];
             }
