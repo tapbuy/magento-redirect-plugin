@@ -88,6 +88,7 @@ class OrderSaveAfter implements ObserverInterface
         try {
             $order = $observer->getEvent()->getOrder();
             if (!$order || !$order->getId()) {
+                $this->logger->warning('OrderSaveAfter: Observer triggered with no valid order');
                 return;
             }
 
@@ -106,13 +107,26 @@ class OrderSaveAfter implements ObserverInterface
             // Prevent duplicate transmissions within a single request
             $orderId = $order->getId();
             if (isset(self::$processedOrderIds[$orderId])) {
+                $this->logger->debug('OrderSaveAfter: Order already processed in this request, skipping', [
+                    'order_id' => $orderId,
+                    'order_number' => $order->getIncrementId(),
+                ]);
                 return;
             }
             self::$processedOrderIds[$orderId] = true;
 
             $this->abTest->processOrderTransaction($order);
+
+            $this->logger->info('OrderSaveAfter: Order transaction processed successfully', [
+                'order_id' => $order->getId(),
+                'order_number' => $order->getIncrementId(),
+                'state' => $currentState,
+            ]);
         } catch (\Exception $e) {
-            $this->logger->logException('Error in Tapbuy order save processing', $e);
+            $this->logger->logException('Error in Tapbuy order save processing', $e, [
+                'order_id' => isset($order) ? $order->getId() : null,
+                'order_number' => isset($order) ? $order->getIncrementId() : null,
+            ]);
         }
     }
 }

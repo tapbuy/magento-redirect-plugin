@@ -130,6 +130,11 @@ class ConfirmOrder implements ResolverInterface
 
             $this->abTest->processOrderTransaction($order, $abTestId);
 
+            $this->logger->info('ConfirmOrder: Order successfully tracked', [
+                'order_number' => $orderNumber,
+                'ab_test_id' => $abTestId,
+            ]);
+
             // Set the tracking flag to prevent duplicate processing
             if ($payment) {
                 $payment->setAdditionalInformation(self::TRACKING_FLAG, true);
