@@ -134,18 +134,8 @@ class FetchLogs implements ResolverInterface
 
                 // Parse JSON lines
                 $lines = array_filter(explode("\n", trim($content)));
-                foreach ($lines as $line) {
-                    $entry = json_decode($line, true);
-                    if ($entry && is_array($entry)) {
-                        // Filter by trace ID if provided
-                        if ($traceId !== null) {
-                            $entryTraceId = $this->extractTraceId($entry);
-                            if ($entryTraceId !== $traceId) {
-                                continue;
-                            }
-                        }
-                        $entries[] = $this->formatLogEntry($entry);
-                    }
+                foreach ($this->parseLogLines($lines, $traceId) as $logEntry) {
+                    $entries[] = $logEntry;
                 }
 
             } finally {
@@ -163,6 +153,29 @@ class FetchLogs implements ResolverInterface
             $entries = array_slice($entries, 0, $limit);
         }
 
+        return $entries;
+    }
+
+    /**
+     * Parse raw log lines, optionally filtering by trace ID
+     *
+     * @param array $lines
+     * @param string|null $traceId
+     * @return array
+     */
+    private function parseLogLines(array $lines, ?string $traceId): array
+    {
+        $entries = [];
+        foreach ($lines as $line) {
+            $entry = json_decode($line, true);
+            if (!$entry || !is_array($entry)) {
+                continue;
+            }
+            if ($traceId !== null && $this->extractTraceId($entry) !== $traceId) {
+                continue;
+            }
+            $entries[] = $this->formatLogEntry($entry);
+        }
         return $entries;
     }
 
