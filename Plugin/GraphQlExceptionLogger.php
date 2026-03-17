@@ -91,7 +91,9 @@ class GraphQlExceptionLogger
                             'file' => $this->normalizePath($previousError->getFile()),
                             'line' => $previousError->getLine(),
                             'stacktrace' => $previousError->getTraceAsString(),
-                            'stacktrace_with_context' => json_encode($this->enrichStacktraceWithContext($previousError)),
+                            'stacktrace_with_context' => json_encode(
+                                $this->enrichStacktraceWithContext($previousError)
+                            ),
                         ];
 
                         // Keep previous_exception for backward compatibility
@@ -114,7 +116,9 @@ class GraphQlExceptionLogger
                         'file' => $this->normalizePath($error->getFile()),
                         'line' => $error->getLine(),
                         'stacktrace' => $error->getTraceAsString(),
-                        'stacktrace_with_context' => json_encode($this->enrichStacktraceWithContext($error)),
+                        'stacktrace_with_context' => json_encode(
+                            $this->enrichStacktraceWithContext($error)
+                        ),
                     ];
 
                     // Keep flat fields for backward compatibility
@@ -164,9 +168,19 @@ class GraphQlExceptionLogger
             'line' => $exception->getLine(),
             'class' => get_class($exception),
             'function' => 'throw',
-            'pre_context' => $this->getSourceCodeLines($exception->getFile(), $exception->getLine(), $contextLines, 'before'),
+            'pre_context' => $this->getSourceCodeLines(
+                $exception->getFile(),
+                $exception->getLine(),
+                $contextLines,
+                'before'
+            ),
             'context_line' => $this->getSourceCodeLine($exception->getFile(), $exception->getLine()),
-            'post_context' => $this->getSourceCodeLines($exception->getFile(), $exception->getLine(), $contextLines, 'after'),
+            'post_context' => $this->getSourceCodeLines(
+                $exception->getFile(),
+                $exception->getLine(),
+                $contextLines,
+                'after'
+            ),
         ];
 
         // Add frames from exception trace
@@ -180,9 +194,19 @@ class GraphQlExceptionLogger
                 'line' => $trace['line'] ?? 0,
                 'class' => $trace['class'] ?? '',
                 'function' => $trace['function'] ?? '',
-                'pre_context' => $this->getSourceCodeLines($trace['file'], $trace['line'] ?? 0, $contextLines, 'before'),
+                'pre_context' => $this->getSourceCodeLines(
+                    $trace['file'],
+                    $trace['line'] ?? 0,
+                    $contextLines,
+                    'before'
+                ),
                 'context_line' => $this->getSourceCodeLine($trace['file'], $trace['line'] ?? 0),
-                'post_context' => $this->getSourceCodeLines($trace['file'], $trace['line'] ?? 0, $contextLines, 'after'),
+                'post_context' => $this->getSourceCodeLines(
+                    $trace['file'],
+                    $trace['line'] ?? 0,
+                    $contextLines,
+                    'after'
+                ),
             ];
         }
 
@@ -191,6 +215,7 @@ class GraphQlExceptionLogger
 
     /**
      * Normalize file paths to be environment-independent and readable
+     *
      * Converts Docker mount paths to portable paths
      *
      * @param string $filePath
@@ -226,8 +251,12 @@ class GraphQlExceptionLogger
      * @param string $position 'before' or 'after'
      * @return array
      */
-    private function getSourceCodeLines(string $filePath, int $lineNumber, int $numLines = 3, string $position = 'before'): array
-    {
+    private function getSourceCodeLines(
+        string $filePath,
+        int $lineNumber,
+        int $numLines = 3,
+        string $position = 'before'
+    ): array {
         if (!file_exists($filePath) || $lineNumber <= 0) {
             return [];
         }
