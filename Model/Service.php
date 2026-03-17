@@ -127,6 +127,10 @@ class Service implements TapbuyServiceInterface
             $statusCode = $this->curl->getStatus();
 
             if ($statusCode >= 200 && $statusCode < 300 && !empty($response)) {
+                $this->logger->debug('Service: Tapbuy API request succeeded', [
+                    'endpoint' => $endpoint,
+                    'status' => $statusCode,
+                ]);
                 return $this->json->unserialize($response);
             }
 
@@ -174,10 +178,22 @@ class Service implements TapbuyServiceInterface
                 'variationId' => $abTestId
             ];
 
-            return $this->sendRequest('/ab-test/transaction', $payload);
+            $result = $this->sendRequest('/ab-test/transaction', $payload);
+
+            if ($result) {
+                $this->logger->info('Service: Transaction sent successfully for order', [
+                    'order_id' => $order->getId(),
+                    'order_number' => $order->getIncrementId(),
+                    'ab_test_id' => $abTestId,
+                    'result_id' => $result['id'] ?? null,
+                ]);
+            }
+
+            return $result;
         } catch (\Exception $e) {
             $this->logger->logException('Error sending transaction to Tapbuy', $e, [
-                'order_id' => $order->getIncrementId(),
+                'order_id' => $order->getId(),
+                'order_number' => $order->getIncrementId(),
             ]);
             return false;
         }
