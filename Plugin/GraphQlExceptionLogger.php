@@ -142,7 +142,7 @@ class GraphQlExceptionLogger
                             'error_code' => $e->getCode(),
                         ]
                     );
-                } catch (\Throwable $logException) {
+                } catch (\Throwable $logException) { // phpcs:ignore Magento2.CodeAnalysis.EmptyBlock.DetectedCatch
                     // Double failure - give up silently
                 }
             }
