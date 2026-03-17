@@ -182,7 +182,8 @@ class Service implements TapbuyServiceInterface
 
             if ($result) {
                 $this->logger->info('Service: Transaction sent successfully for order', [
-                    'order_id' => $order->getIncrementId(),
+                    'order_id' => $order->getId(),
+                    'order_number' => $order->getIncrementId(),
                     'ab_test_id' => $abTestId,
                     'result_id' => $result['id'] ?? null,
                 ]);
@@ -191,7 +192,8 @@ class Service implements TapbuyServiceInterface
             return $result;
         } catch (\Exception $e) {
             $this->logger->logException('Error sending transaction to Tapbuy', $e, [
-                'order_id' => $order->getIncrementId(),
+                'order_id' => $order->getId(),
+                'order_number' => $order->getIncrementId(),
             ]);
             return false;
         }

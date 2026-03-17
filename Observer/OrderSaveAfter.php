@@ -115,17 +115,19 @@ class OrderSaveAfter implements ObserverInterface
             }
             self::$processedOrderIds[$orderId] = true;
 
-            $this->abTest->processOrderTransaction($order);
+            $tracked = $this->abTest->processOrderTransaction($order);
 
-            $this->logger->info('OrderSaveAfter: Order transaction processed successfully', [
-                'order_id' => $order->getId(),
-                'order_number' => $order->getIncrementId(),
-                'state' => $currentState,
-            ]);
+            if ($tracked) {
+                $this->logger->info('OrderSaveAfter: Order transaction processed successfully', [
+                    'order_id' => $order->getId(),
+                    'order_number' => $order->getIncrementId(),
+                    'state' => $currentState,
+                ]);
+            }
         } catch (\Exception $e) {
             $this->logger->logException('Error in Tapbuy order save processing', $e, [
-                'order_id' => isset($order) ? $order->getId() : null,
-                'order_number' => isset($order) ? $order->getIncrementId() : null,
+                'order_id' => $order instanceof Order ? $order->getId() : null,
+                'order_number' => $order instanceof Order ? $order->getIncrementId() : null,
             ]);
         }
     }

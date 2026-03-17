@@ -25,7 +25,7 @@ interface ABTestInterface
      *
      * @param Order $order
      * @param int|null $abTestId Used with tapbuyConfirmOrder GraphQL mutation for headless implementations
-     * @return void
+     * @return bool True if a transaction was actually sent, false if skipped or failed
      */
     public function processOrderTransaction($order, $abTestId = null);
 }
