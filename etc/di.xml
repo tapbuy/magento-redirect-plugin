@@ -50,19 +50,7 @@
         </arguments>
     </type>
 
-    <virtualType name="Tapbuy\RedirectTracking\Logger\VirtualLogger" type="Magento\Framework\Logger\Monolog">
-        <arguments>
-            <argument name="name" xsi:type="string">tapbuy</argument>
-            <argument name="handlers" xsi:type="array">
-                <item name="tapbuy_handler" xsi:type="object">Tapbuy\RedirectTracking\Logger\Handler</item>
-            </argument>
-            <argument name="processors" xsi:type="array">
-                <item name="trace_id" xsi:type="object">Tapbuy\RedirectTracking\Logger\TraceIdProcessor</item>
-            </argument>
-        </arguments>
-    </virtualType>
-
-    <!-- Make TapbuyLogger use the virtual logger configuration -->
+    <!-- Configure TapbuyLogger directly with its own channel name, handler, and TraceIdProcessor -->
     <type name="Tapbuy\RedirectTracking\Logger\TapbuyLogger">
         <arguments>
             <argument name="name" xsi:type="string">tapbuy</argument>
