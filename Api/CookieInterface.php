@@ -37,7 +37,13 @@ interface CookieInterface
      * @param int|null $duration Cookie duration in seconds
      * @return void
      */
-    public function setCookie($name, $value, $httpOnly = true, $secure = true, $duration = null);
+    public function setCookie(
+        string $name,
+        string $value,
+        bool $httpOnly = true,
+        bool $secure = true,
+        ?int $duration = null
+    ): void;
 
     /**
      * Remove cookie
@@ -47,7 +53,7 @@ interface CookieInterface
      * @param bool $secure Secure flag
      * @return void
      */
-    public function removeCookie($name, $httpOnly = true, $secure = true);
+    public function removeCookie(string $name, bool $httpOnly = true, bool $secure = true): void;
 
     /**
      * Get cookie value
@@ -55,7 +61,7 @@ interface CookieInterface
      * @param string $name Cookie name
      * @return string|null
      */
-    public function getCookie($name);
+    public function getCookie(string $name): ?string;
 
     /**
      * Set A/B test ID cookie
@@ -63,7 +69,7 @@ interface CookieInterface
      * @param string $value
      * @return void
      */
-    public function setABTestIdCookie($value);
+    public function setABTestIdCookie(string $value): void;
 
     /**
      * Remove A/B test ID cookie

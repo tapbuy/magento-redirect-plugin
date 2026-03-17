@@ -72,8 +72,8 @@ class FetchLogs implements ResolverInterface
         Field $field,
         $context,
         ResolveInfo $info,
-        array $value = null,
-        array $args = null
+        ?array $value = null,
+        ?array $args = null
     ) {
         // Require proper ACL authorization for log management
         $this->tokenAuthorization->authorize(self::ACL_RESOURCE);

@@ -85,8 +85,8 @@ class ConfirmOrder implements ResolverInterface
         Field $field,
         $context,
         ResolveInfo $info,
-        array $value = null,
-        array $args = null
+        ?array $value = null,
+        ?array $args = null
     ) {
         if (!$this->config->isEnabled()) {
             // Tapbuy disabled: treat as successful no-op to avoid signaling an error to clients

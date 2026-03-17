@@ -28,7 +28,7 @@ interface ConfigInterface
      * @param int|null $storeId
      * @return bool
      */
-    public function isEnabled($storeId = null);
+    public function isEnabled(?int $storeId = null): bool;
 
     /**
      * Get Tapbuy API URL
@@ -36,7 +36,7 @@ interface ConfigInterface
      * @param int|null $storeId
      * @return string
      */
-    public function getApiUrl($storeId = null);
+    public function getApiUrl(?int $storeId = null): string;
 
     /**
      * Get Tapbuy Encryption Key (Decrypted)
@@ -44,7 +44,7 @@ interface ConfigInterface
      * @param int|null $storeId
      * @return string
      */
-    public function getEncryptionKey($storeId = null);
+    public function getEncryptionKey(?int $storeId = null): string;
 
     /**
      * Get Locale Format (long|short)
@@ -52,7 +52,7 @@ interface ConfigInterface
      * @param int|null $storeId
      * @return string
      */
-    public function getLocaleFormat($storeId = null);
+    public function getLocaleFormat(?int $storeId = null): string;
 
     /**
      * Get Order Confirmation Mode (graphql|observer|both)
@@ -60,5 +60,5 @@ interface ConfigInterface
      * @param int|null $storeId
      * @return string
      */
-    public function getOrderConfirmationMode($storeId = null);
+    public function getOrderConfirmationMode(?int $storeId = null): string;
 }
