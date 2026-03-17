@@ -50,7 +50,7 @@
         </arguments>
     </type>
 
-    <!-- Make TapbuyLogger use the Monolog configuration -->
+    <!-- Configure TapbuyLogger directly with its own channel name, handler, and TraceIdProcessor -->
     <type name="Tapbuy\RedirectTracking\Logger\TapbuyLogger">
         <arguments>
             <argument name="name" xsi:type="string">tapbuy</argument>
