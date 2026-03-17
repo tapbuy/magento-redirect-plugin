@@ -29,43 +29,6 @@ use Tapbuy\RedirectTracking\Service\PixelService;
 class Data extends AbstractHelper implements DataHelperInterface
 {
     /**
-     * @var CookieService
-     */
-    private $cookieService;
-
-    /**
-     * @var EncryptionService
-     */
-    private $encryptionService;
-
-    /**
-     * @var LocaleService
-     */
-    private $localeService;
-
-    /**
-     * @var PixelService
-     */
-    private $pixelService;
-
-    /**
-     * @var State
-     */
-    private $appState;
-
-    /**
-     * @var Header
-     */
-    private $httpHeader;
-
-    /**
-     * @var RequestInterface
-     */
-    private $request;
-
-    /**
-     * Data constructor.
-     *
      * @param Context $context
      * @param CookieService $cookieService
      * @param EncryptionService $encryptionService
@@ -77,21 +40,14 @@ class Data extends AbstractHelper implements DataHelperInterface
      */
     public function __construct(
         Context $context,
-        CookieService $cookieService,
-        EncryptionService $encryptionService,
-        LocaleService $localeService,
-        PixelService $pixelService,
-        State $appState,
-        Header $httpHeader,
-        RequestInterface $request
+        private readonly CookieService $cookieService,
+        private readonly EncryptionService $encryptionService,
+        private readonly LocaleService $localeService,
+        private readonly PixelService $pixelService,
+        private readonly State $appState,
+        private readonly Header $httpHeader,
+        private readonly RequestInterface $request
     ) {
-        $this->cookieService = $cookieService;
-        $this->encryptionService = $encryptionService;
-        $this->localeService = $localeService;
-        $this->pixelService = $pixelService;
-        $this->appState = $appState;
-        $this->httpHeader = $httpHeader;
-        $this->request = $request;
         parent::__construct($context);
     }
 

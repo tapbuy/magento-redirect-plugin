@@ -86,33 +86,15 @@ class TokenAuthorization implements TokenAuthorizationInterface
     ];
 
     /**
-     * @var RequestInterface
-     */
-    private $request;
-
-    /**
-     * @var UserContextInterface
-     */
-    private $userContext;
-
-    /**
-     * @var AuthorizationInterface
-     */
-    private $authorization;
-
-    /**
      * @param RequestInterface $request
      * @param UserContextInterface $userContext
      * @param AuthorizationInterface $authorization
      */
     public function __construct(
-        RequestInterface $request,
-        UserContextInterface $userContext,
-        AuthorizationInterface $authorization
+        private readonly RequestInterface $request,
+        private readonly UserContextInterface $userContext,
+        private readonly AuthorizationInterface $authorization
     ) {
-        $this->request = $request;
-        $this->userContext = $userContext;
-        $this->authorization = $authorization;
     }
 
     /**

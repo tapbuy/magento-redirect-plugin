@@ -19,40 +19,6 @@ use Tapbuy\RedirectTracking\Model\Validator\RedirectInputValidator;
 class Redirect implements ResolverInterface
 {
     /**
-     * @var TapbuyServiceInterface
-     */
-    protected $service;
-
-    /**
-     * @var ConfigInterface
-     */
-    protected $config;
-
-    /**
-     * @var DataHelperInterface
-     */
-    protected $helper;
-
-    /**
-     * @var CartResolver
-     */
-    private $cartResolver;
-
-    /**
-     * @var CartOwnershipValidator
-     */
-    private $cartOwnershipValidator;
-
-    /**
-     * @var RedirectInputValidator
-     */
-    private $inputValidator;
-
-    /**
-     * Redirect constructor.
-     *
-     * Initializes the Redirect resolver with required dependencies.
-     *
      * @param TapbuyServiceInterface $service
      * @param ConfigInterface $config
      * @param DataHelperInterface $helper
@@ -61,19 +27,13 @@ class Redirect implements ResolverInterface
      * @param RedirectInputValidator $inputValidator
      */
     public function __construct(
-        TapbuyServiceInterface $service,
-        ConfigInterface $config,
-        DataHelperInterface $helper,
-        CartResolver $cartResolver,
-        CartOwnershipValidator $cartOwnershipValidator,
-        RedirectInputValidator $inputValidator
+        private readonly TapbuyServiceInterface $service,
+        private readonly ConfigInterface $config,
+        private readonly DataHelperInterface $helper,
+        private readonly CartResolver $cartResolver,
+        private readonly CartOwnershipValidator $cartOwnershipValidator,
+        private readonly RedirectInputValidator $inputValidator
     ) {
-        $this->service = $service;
-        $this->config = $config;
-        $this->helper = $helper;
-        $this->cartResolver = $cartResolver;
-        $this->cartOwnershipValidator = $cartOwnershipValidator;
-        $this->inputValidator = $inputValidator;
     }
 
     /**

@@ -13,7 +13,6 @@ namespace Tapbuy\RedirectTracking\Controller\Pixel;
 
 use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\App\RequestInterface;
-use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\Result\Raw;
 use Magento\Framework\Controller\Result\RawFactory;
 use Tapbuy\RedirectTracking\Api\ConfigInterface;
@@ -24,38 +23,6 @@ use Tapbuy\RedirectTracking\Model\Validator\PixelInputValidator;
 class Track implements HttpGetActionInterface
 {
     /**
-     * @var RequestInterface
-     */
-    private $request;
-
-    /**
-     * @var RawFactory
-     */
-    private $rawFactory;
-
-    /**
-     * @var DataHelperInterface
-     */
-    private $helper;
-
-    /**
-     * @var ConfigInterface
-     */
-    private $config;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var PixelInputValidator
-     */
-    private $pixelInputValidator;
-
-    /**
-     * Track constructor.
-     *
      * @param RequestInterface $request
      * @param RawFactory $rawFactory
      * @param DataHelperInterface $helper
@@ -64,19 +31,13 @@ class Track implements HttpGetActionInterface
      * @param PixelInputValidator $pixelInputValidator
      */
     public function __construct(
-        RequestInterface $request,
-        RawFactory $rawFactory,
-        DataHelperInterface $helper,
-        LoggerInterface $logger,
-        ConfigInterface $config,
-        PixelInputValidator $pixelInputValidator
+        private readonly RequestInterface $request,
+        private readonly RawFactory $rawFactory,
+        private readonly DataHelperInterface $helper,
+        private readonly LoggerInterface $logger,
+        private readonly ConfigInterface $config,
+        private readonly PixelInputValidator $pixelInputValidator
     ) {
-        $this->request = $request;
-        $this->rawFactory = $rawFactory;
-        $this->helper = $helper;
-        $this->logger = $logger;
-        $this->config = $config;
-        $this->pixelInputValidator = $pixelInputValidator;
     }
 
     /**

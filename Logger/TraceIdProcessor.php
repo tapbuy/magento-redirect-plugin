@@ -25,11 +25,6 @@ use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
 class TraceIdProcessor implements ProcessorInterface
 {
     /**
-     * @var TapbuyRequestDetectorInterface
-     */
-    private TapbuyRequestDetectorInterface $tapbuyRequestDetector;
-
-    /**
      * Cached trace ID to avoid repeated header reads
      * @var string|null|false False means already checked but not found
      */
@@ -38,9 +33,9 @@ class TraceIdProcessor implements ProcessorInterface
     /**
      * @param TapbuyRequestDetectorInterface $tapbuyRequestDetector
      */
-    public function __construct(TapbuyRequestDetectorInterface $tapbuyRequestDetector)
-    {
-        $this->tapbuyRequestDetector = $tapbuyRequestDetector;
+    public function __construct(
+        private readonly TapbuyRequestDetectorInterface $tapbuyRequestDetector
+    ) {
     }
 
     /**

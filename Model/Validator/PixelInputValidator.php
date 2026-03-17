@@ -54,17 +54,11 @@ class PixelInputValidator
     private const LOG_INJECTION_CHARS = ["\n", "\r", "\0"];
 
     /**
-     * @var JsonDecodeHelper
-     */
-    private $jsonDecodeHelper;
-
-    /**
      * @param JsonDecodeHelper $jsonDecodeHelper
      */
     public function __construct(
-        JsonDecodeHelper $jsonDecodeHelper
+        private readonly JsonDecodeHelper $jsonDecodeHelper
     ) {
-        $this->jsonDecodeHelper = $jsonDecodeHelper;
     }
 
     /**

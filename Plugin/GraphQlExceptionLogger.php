@@ -25,33 +25,15 @@ use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
 class GraphQlExceptionLogger
 {
     /**
-     * @var TapbuyRequestDetectorInterface
-     */
-    private TapbuyRequestDetectorInterface $tapbuyRequestDetector;
-
-    /**
-     * @var LoggerInterface
-     */
-    private LoggerInterface $logger;
-
-    /**
-     * @var FileDriver
-     */
-    private FileDriver $fileDriver;
-
-    /**
      * @param TapbuyRequestDetectorInterface $tapbuyRequestDetector
      * @param LoggerInterface $logger
      * @param FileDriver $fileDriver
      */
     public function __construct(
-        TapbuyRequestDetectorInterface $tapbuyRequestDetector,
-        LoggerInterface $logger,
-        FileDriver $fileDriver
+        private readonly TapbuyRequestDetectorInterface $tapbuyRequestDetector,
+        private readonly LoggerInterface $logger,
+        private readonly FileDriver $fileDriver
     ) {
-        $this->tapbuyRequestDetector = $tapbuyRequestDetector;
-        $this->logger = $logger;
-        $this->fileDriver = $fileDriver;
     }
 
     /**
