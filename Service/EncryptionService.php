@@ -63,10 +63,11 @@ class EncryptionService
      *
      * Serializes session and cart data to JSON, then encrypts it with AES-256-GCM
      * using the configured encryption key. Returns an empty string when the key
-     * is not configured or encryption fails.
+     * is not configured.
      *
      * @param \Magento\Quote\Api\Data\CartInterface|null $quote Active quote, or null when unavailable.
-     * @return string Base64-encoded encrypted payload, or empty string on failure.
+     * @return string Base64-encoded encrypted payload, or empty string when no encryption key is configured.
+     * @throws \Exception If encryption fails.
      */
     public function getTapbuyKey($quote): string
     {

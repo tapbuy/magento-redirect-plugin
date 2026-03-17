@@ -174,9 +174,13 @@ class CookieService
      *
      * Collects analytics cookies (e.g. _ga, _pcid and their prefixed variants)
      * from the CookieReader, injected cookies, and the raw HTTP request.
-     * Request cookies take precedence over injected ones when the same name appears in both.
+     * Exact-name cookies retrieved from the CookieReader take precedence and are not
+     * overwritten by other sources. For prefix-matched cookies, request cookies take
+     * precedence over injected ones when the same name appears in both.
+     * Overall precedence: CookieReader exact matches > request prefix matches
+     * > injected prefix matches.
      *
-     * @return array<string, string> Cookie name => value map.
+     * @return array<string, mixed> Cookie name => value map.
      */
     public function getTrackingCookies(): array
     {
