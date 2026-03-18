@@ -26,6 +26,19 @@ use Magento\Sales\Model\Order;
 class Service implements TapbuyServiceInterface
 {
     /**
+     * Maximum time in seconds for the entire cURL request (connect + transfer).
+     * Kept low because this call is synchronous in the checkout flow — a slow
+     * or unreachable Tapbuy API must not stall the shopper's browser.
+     */
+    private const CURL_TIMEOUT = 10;
+
+    /**
+     * Maximum time in seconds to establish the TCP connection.
+     * Must be strictly less than CURL_TIMEOUT.
+     */
+    private const CURL_CONNECT_TIMEOUT = 3;
+
+    /**
      * @param ConfigInterface $config
      * @param Curl $curl
      * @param Json $json
@@ -239,7 +252,7 @@ class Service implements TapbuyServiceInterface
         }
 
         // Set timeout
-        $this->curl->setOption(CURLOPT_TIMEOUT, 10);
-        $this->curl->setOption(CURLOPT_CONNECTTIMEOUT, 3);
+        $this->curl->setOption(CURLOPT_TIMEOUT, self::CURL_TIMEOUT);
+        $this->curl->setOption(CURLOPT_CONNECTTIMEOUT, self::CURL_CONNECT_TIMEOUT);
     }
 }
