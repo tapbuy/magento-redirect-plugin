@@ -239,7 +239,7 @@ class Service implements TapbuyServiceInterface
         }
 
         // Set timeout
-        $this->curl->setOption(CURLOPT_TIMEOUT, 30);
-        $this->curl->setOption(CURLOPT_CONNECTTIMEOUT, 10);
+        $this->curl->setOption(CURLOPT_TIMEOUT, 10);
+        $this->curl->setOption(CURLOPT_CONNECTTIMEOUT, 3);
     }
 }
