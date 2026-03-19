@@ -37,13 +37,13 @@ interface TapbuyServiceInterface
      * Trigger A/B test
      *
      * @param CartInterface $quote
-     * @param bool|null $forceRedirect
+     * @param string|null $forceRedirect
      * @param string|null $referer
      * @return array
      */
     public function triggerABTest(
         CartInterface $quote,
-        ?bool $forceRedirect = null,
+        ?string $forceRedirect = null,
         ?string $referer = null
     ): array;
 }
