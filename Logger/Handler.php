@@ -106,9 +106,6 @@ class Handler extends StreamHandler implements LogHandlerInterface
      */
     protected function write(array|LogRecord $record): void
     {
-        // Anonymize the entire record before any further processing.
-        $record = $this->anonymizeRecord($record);
-
         // Normalize record for both Monolog 2.x (array) and 3.x (LogRecord)
         $isLogRecord = $record instanceof LogRecord;
         $context = $isLogRecord ? $record->context : ($record['context'] ?? []);
@@ -152,6 +149,9 @@ class Handler extends StreamHandler implements LogHandlerInterface
                 $record['context']['stacktrace'] = $context['exception']['stacktrace'];
             }
         }
+
+        // Anonymize after all context enrichment so the final written payload is fully scrubbed.
+        $record = $this->anonymizeRecord($record);
 
         // Format the record using the formatter (JsonFormatter)
         $formatted = '';
