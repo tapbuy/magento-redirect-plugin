@@ -115,16 +115,15 @@ class Config implements ConfigInterface
     /**
      * Get the URL of the data-scrubbing keys API endpoint.
      * Returns an empty string when log anonymization is disabled.
+     * This is a global (default-scope) setting — not configurable per website or store view.
      *
-     * @param int|null $storeId
      * @return string
      */
-    public function getScrubbingKeysUrl(?int $storeId = null): string
+    public function getScrubbingKeysUrl(): string
     {
         return (string) $this->scopeConfig->getValue(
             self::XML_PATH_SCRUBBING_KEYS_URL,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
+            ScopeConfigInterface::SCOPE_TYPE_DEFAULT
         );
     }
 }

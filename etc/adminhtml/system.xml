@@ -52,7 +52,7 @@
             </group>
             <group id="logging" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Logging Settings</label>
-                <field id="scrubbing_keys_url" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="scrubbing_keys_url" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Scrubbing Keys URL</label>
                     <comment>URL of the data-scrubbing keys API endpoint used to anonymize log entries. Leave empty to disable log anonymization.</comment>
                     <depends>
