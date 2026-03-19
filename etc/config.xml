@@ -12,7 +12,9 @@
             <tracking>
                 <order_confirmation_mode>graphql</order_confirmation_mode>
             </tracking>
-
+            <logging>
+                <scrubbing_keys_url></scrubbing_keys_url>
+            </logging>
         </tapbuy>
     </default>
 </config>

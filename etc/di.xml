@@ -41,6 +41,8 @@
     <type name="Tapbuy\RedirectTracking\Logger\Handler">
         <arguments>
             <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
+            <argument name="config" xsi:type="object">Tapbuy\RedirectTracking\Api\ConfigInterface</argument>
+            <argument name="directoryList" xsi:type="object">Magento\Framework\App\Filesystem\DirectoryList</argument>
         </arguments>
     </type>
 

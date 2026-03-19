@@ -61,4 +61,13 @@ interface ConfigInterface
      * @return string
      */
     public function getOrderConfirmationMode(?int $storeId = null): string;
+
+    /**
+     * Get the URL of the data-scrubbing keys API endpoint.
+     * Returns an empty string when log anonymization is disabled.
+     *
+     * @param int|null $storeId
+     * @return string
+     */
+    public function getScrubbingKeysUrl(?int $storeId = null): string;
 }
