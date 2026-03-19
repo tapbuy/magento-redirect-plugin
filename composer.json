@@ -14,7 +14,8 @@
         "magento/module-integration": "^100.4",
         "magento/module-quote": "^101.2",
         "magento/module-graph-ql": "^100.4",
-        "phpseclib/phpseclib": "^3.0"
+        "phpseclib/phpseclib": "^3.0",
+        "tapbuy/data-scrubber": "^1.0"
     },
     "autoload": {
         "files": [

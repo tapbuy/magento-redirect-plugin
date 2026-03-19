@@ -23,6 +23,7 @@ class Config implements ConfigInterface
     public const XML_PATH_ENCRYPTION_KEY = 'tapbuy/api/encryption_key';
     public const XML_PATH_LOCALE_FORMAT = 'tapbuy/api/locale_format';
     public const XML_PATH_ORDER_CONFIRMATION_MODE = 'tapbuy/tracking/order_confirmation_mode';
+    public const XML_PATH_SCRUBBING_KEYS_URL = 'tapbuy/logging/scrubbing_keys_url';
 
     /**
      * @param ScopeConfigInterface $scopeConfig
@@ -109,5 +110,20 @@ class Config implements ConfigInterface
             ScopeInterface::SCOPE_STORE,
             $storeId
         ) ?: ConfigInterface::ORDER_CONFIRMATION_MODE_GRAPHQL;
+    }
+
+    /**
+     * Get the URL of the data-scrubbing keys API endpoint.
+     * Returns an empty string when log anonymization is disabled.
+     * This is a global (default-scope) setting — not configurable per website or store view.
+     *
+     * @return string
+     */
+    public function getScrubbingKeysUrl(): string
+    {
+        return (string) $this->scopeConfig->getValue(
+            self::XML_PATH_SCRUBBING_KEYS_URL,
+            ScopeConfigInterface::SCOPE_TYPE_DEFAULT
+        );
     }
 }
