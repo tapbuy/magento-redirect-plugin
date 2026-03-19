@@ -217,7 +217,7 @@ class CookieService
      */
     private function getAllRequestCookies(): array
     {
-        $cookieHeader = $this->request->getCookies();
+        $cookieHeader = $this->request->getHeaders()->get('Cookie');
         return $cookieHeader ? $cookieHeader->getArrayCopy() : [];
     }
 
