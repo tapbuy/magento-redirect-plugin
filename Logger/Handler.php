@@ -28,10 +28,9 @@ use Tapbuy\RedirectTracking\Api\TapbuyConstants;
 
 class Handler extends StreamHandler implements LogHandlerInterface
 {
-    /**
-     * @var string
-     */
     protected const LOG_FILE = TapbuyConstants::LOG_FILE_NAME;
+
+    protected const SCRUBBING_KEYS_CACHE_FILE = 'tapbuy-scrubbing-keys.json';
 
     /**
      * @var DriverInterface
@@ -239,7 +238,7 @@ class Handler extends StreamHandler implements LogHandlerInterface
         }
 
         try {
-            $cachePath = $this->directoryList->getPath(DirectoryList::VAR_DIR) . '/tapbuy-scrubbing-keys.json';
+            $cachePath = $this->directoryList->getPath(DirectoryList::VAR_DIR) . '/' . self::SCRUBBING_KEYS_CACHE_FILE;
             $this->anonymizer = new Anonymizer(new Keys($url, $cachePath));
         } catch (\Throwable $e) {
             error_log('[Tapbuy] Failed to initialize log anonymizer: ' . $e->getMessage());
