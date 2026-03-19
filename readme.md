@@ -10,6 +10,7 @@ This module integrates Tapbuy's checkout experience with Magento 2, enabling A/B
 - Seamless integration with Magento's checkout flow
 - Cookie-based session management for A/B test tracking
 - Headless integration
+- Centralized structured logging (JSON) with automatic PII anonymization via [tapbuy/data-scrubber](https://github.com/tapbuy/data-scrubber)
 
 ## Installation
 
@@ -215,6 +216,25 @@ This module supports headless frontends (Next.js, Vue, SPA, etc.) via a pixel-ba
 This module provides the **centralized logging system** for all Tapbuy Magento modules. Logs are written to `var/log/tapbuy-checkout.log` in JSON format and can be retrieved via GraphQL for forwarding to Sentry.
 
 For complete documentation on the logging system, including usage examples, best practices, and API integration, see **[docs/LOGGING.md](./docs/LOGGING.md)**.
+
+### Anonymized Logging
+
+Log entries are automatically **anonymized before being written to disk**, using the [tapbuy/data-scrubber](https://github.com/tapbuy/data-scrubber) library. This ensures that sensitive personal data (names, emails, addresses, payment details, etc.) is redacted from log files, even when full context objects are logged.
+
+**How it works:**
+
+- The `Handler` fetches a list of scrubbing keys from a configurable URL (set via **Stores > Configuration > Tapbuy > Checkout Settings > Scrubbing Keys URL**).
+- Keys are cached locally to `var/tapbuy-scrubbing-keys.json` to avoid repeated remote fetches.
+- On every log write, the full record (message, context, extra) is passed through `Anonymizer::anonymizeObject()` before formatting and writing.
+- Anonymization is **fail-open**: if the scrubbing keys URL is not configured, or if initialization fails for any reason, the record is written as-is so that logging is never blocked.
+
+**Configuration:**
+
+| Setting | Description |
+|---|---|
+| **Scrubbing Keys URL** | Remote URL that returns the JSON list of fields to redact. Leave empty to disable anonymization. |
+
+> The scrubbing keys are managed centrally by the Tapbuy API and define which field names (e.g. `email`, `firstname`, `card_number`) should be replaced with anonymized tokens in log output.
 
 ## Development Mode
 
