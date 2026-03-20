@@ -17,6 +17,9 @@
         "phpseclib/phpseclib": "^3.0",
         "tapbuy/data-scrubber": "^1.0"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6"
+    },
     "autoload": {
         "files": [
             "registration.php"
@@ -24,5 +27,13 @@
         "psr-4": {
             "Tapbuy\\RedirectTracking\\": ""
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tapbuy\\RedirectTracking\\Test\\": "Test/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
     }
 }
