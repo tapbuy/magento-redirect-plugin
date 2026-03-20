@@ -13,6 +13,7 @@ use PHPUnit\Framework\TestCase;
 use Tapbuy\RedirectTracking\Api\Authorization\TokenAuthorizationInterface;
 use Tapbuy\RedirectTracking\Api\ConfigInterface;
 use Tapbuy\RedirectTracking\Api\LogHandlerInterface;
+use Tapbuy\RedirectTracking\Api\TapbuyConstants;
 use Tapbuy\RedirectTracking\Model\Resolver\FetchLogs;
 
 class FetchLogsTest extends TestCase
@@ -124,7 +125,7 @@ class FetchLogsTest extends TestCase
             'level' => 200,
             'level_name' => 'INFO',
             'datetime' => '2024-01-01T00:00:00+00:00',
-            'context' => ['tapbuy_trace_id' => 'trace-abc'],
+            'context' => [TapbuyConstants::LOG_CONTEXT_TRACE_ID => 'trace-abc'],
             'channel' => 'tapbuy',
         ]);
         $log2 = json_encode([
@@ -132,7 +133,7 @@ class FetchLogsTest extends TestCase
             'level' => 200,
             'level_name' => 'INFO',
             'datetime' => '2024-01-01T00:00:01+00:00',
-            'context' => ['tapbuy_trace_id' => 'trace-xyz'],
+            'context' => [TapbuyConstants::LOG_CONTEXT_TRACE_ID => 'trace-xyz'],
             'channel' => 'tapbuy',
         ]);
 

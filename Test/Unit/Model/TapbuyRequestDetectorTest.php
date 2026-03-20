@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tapbuy\RedirectTracking\Test\Unit\Model;
 
-use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\Request\Http;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Tapbuy\RedirectTracking\Api\TapbuyConstants;
@@ -13,11 +13,11 @@ use Tapbuy\RedirectTracking\Model\TapbuyRequestDetector;
 class TapbuyRequestDetectorTest extends TestCase
 {
     private TapbuyRequestDetector $detector;
-    private RequestInterface&MockObject $request;
+    private Http&MockObject $request;
 
     protected function setUp(): void
     {
-        $this->request = $this->createMock(RequestInterface::class);
+        $this->request = $this->createMock(Http::class);
         $this->detector = new TapbuyRequestDetector($this->request);
     }
 

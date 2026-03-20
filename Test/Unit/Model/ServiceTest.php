@@ -6,7 +6,7 @@ namespace Tapbuy\RedirectTracking\Test\Unit\Model;
 
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Serialize\Serializer\Json;
-use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\Request\Http;
 use Magento\Framework\UrlInterface;
 use Magento\Quote\Api\Data\CartInterface;
 use Magento\Sales\Model\Order;
@@ -27,7 +27,7 @@ class ServiceTest extends TestCase
     private Json&MockObject $json;
     private LoggerInterface&MockObject $logger;
     private DataHelperInterface&MockObject $helper;
-    private RequestInterface&MockObject $request;
+    private Http&MockObject $request;
     private UrlInterface&MockObject $urlBuilder;
     private TapbuyRequestDetectorInterface&MockObject $requestDetector;
 
@@ -38,7 +38,7 @@ class ServiceTest extends TestCase
         $this->json = $this->createMock(Json::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->helper = $this->createMock(DataHelperInterface::class);
-        $this->request = $this->createMock(RequestInterface::class);
+        $this->request = $this->createMock(Http::class);
         $this->urlBuilder = $this->createMock(UrlInterface::class);
         $this->requestDetector = $this->createMock(TapbuyRequestDetectorInterface::class);
 
@@ -74,7 +74,7 @@ class ServiceTest extends TestCase
     {
         $this->config->method('isEnabled')->willReturn(true);
         $this->config->method('getApiUrl')->willReturn('https://api.tapbuy.com');
-        $this->config->method('getEncryptionKey')->willReturn(null);
+        $this->config->method('getEncryptionKey')->willReturn('');
 
         $this->helper->method('isDevelopmentMode')->willReturn(false);
         $this->helper->method('getLocale')->willReturn('en_US');

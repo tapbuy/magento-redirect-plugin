@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tapbuy\RedirectTracking\Test\Unit\Service;
 
-use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\Request\Http;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Quote\Api\Data\CartInterface;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -17,14 +17,14 @@ class EncryptionServiceTest extends TestCase
 {
     private EncryptionService $encryptionService;
     private ConfigInterface&MockObject $config;
-    private RequestInterface&MockObject $request;
+    private Http&MockObject $request;
     private Json $json;
     private CartResolverInterface&MockObject $cartResolver;
 
     protected function setUp(): void
     {
         $this->config = $this->createMock(ConfigInterface::class);
-        $this->request = $this->createMock(RequestInterface::class);
+        $this->request = $this->createMock(Http::class);
         $this->json = new Json();
         $this->cartResolver = $this->createMock(CartResolverInterface::class);
 
@@ -38,7 +38,7 @@ class EncryptionServiceTest extends TestCase
 
     public function testGetTapbuyKeyReturnsEmptyWhenNoEncryptionKey(): void
     {
-        $this->config->method('getEncryptionKey')->willReturn(null);
+        $this->config->method('getEncryptionKey')->willReturn('');
         $this->request->method('getHeader')->willReturn(false);
 
         $result = $this->encryptionService->getTapbuyKey(null);

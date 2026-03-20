@@ -75,7 +75,11 @@ class CartResolverTest extends TestCase
 
     public function testGetMaskedCartIdReturnsMaskedId(): void
     {
-        $quoteIdMask = $this->createMock(QuoteIdMask::class);
+        $quoteIdMask = $this->getMockBuilder(QuoteIdMask::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['load'])
+            ->addMethods(['getMaskedId'])
+            ->getMock();
         $quoteIdMask->method('load')->with(42, 'quote_id')->willReturnSelf();
         $quoteIdMask->method('getMaskedId')->willReturn('masked-abc');
         $this->quoteIdMaskFactory->method('create')->willReturn($quoteIdMask);
@@ -85,7 +89,11 @@ class CartResolverTest extends TestCase
 
     public function testGetMaskedCartIdReturnsNullWhenEmpty(): void
     {
-        $quoteIdMask = $this->createMock(QuoteIdMask::class);
+        $quoteIdMask = $this->getMockBuilder(QuoteIdMask::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['load'])
+            ->addMethods(['getMaskedId'])
+            ->getMock();
         $quoteIdMask->method('load')->with(42, 'quote_id')->willReturnSelf();
         $quoteIdMask->method('getMaskedId')->willReturn('');
         $this->quoteIdMaskFactory->method('create')->willReturn($quoteIdMask);

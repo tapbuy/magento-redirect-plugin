@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tapbuy\RedirectTracking\Test\Unit\Service;
 
 use Magento\Framework\UrlInterface;
-use Magento\Store\Api\Data\StoreInterface;
+use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -24,7 +24,7 @@ class PixelServiceTest extends TestCase
 
     public function testGeneratePixelUrlCreatesEncodedUrl(): void
     {
-        $store = $this->createMock(StoreInterface::class);
+        $store = $this->createMock(Store::class);
         $store->method('getBaseUrl')
             ->with(UrlInterface::URL_TYPE_WEB)
             ->willReturn('https://shop.com/');

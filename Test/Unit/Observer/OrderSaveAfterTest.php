@@ -42,7 +42,10 @@ class OrderSaveAfterTest extends TestCase
 
     private function createObserverWithOrder(?Order $order): Observer
     {
-        $event = $this->createMock(Event::class);
+        $event = $this->getMockBuilder(Event::class)
+            ->disableOriginalConstructor()
+            ->addMethods(['getOrder'])
+            ->getMock();
         $event->method('getOrder')->willReturn($order);
 
         $observer = $this->createMock(Observer::class);

@@ -20,7 +20,7 @@ class CartOwnershipValidatorTest extends TestCase
 
     public function testGuestCanAccessGuestCart(): void
     {
-        $quote = $this->createMock(Quote::class);
+        $quote = $this->getMockBuilder(Quote::class)->disableOriginalConstructor()->addMethods(['getCustomerId'])->getMock();
         $quote->method('getCustomerId')->willReturn(null);
 
         // Should not throw
@@ -30,7 +30,7 @@ class CartOwnershipValidatorTest extends TestCase
 
     public function testGuestCannotAccessCustomerCart(): void
     {
-        $quote = $this->createMock(Quote::class);
+        $quote = $this->getMockBuilder(Quote::class)->disableOriginalConstructor()->addMethods(['getCustomerId'])->getMock();
         $quote->method('getCustomerId')->willReturn(42);
 
         $this->expectException(LocalizedException::class);
@@ -39,7 +39,7 @@ class CartOwnershipValidatorTest extends TestCase
 
     public function testCustomerCanAccessOwnCart(): void
     {
-        $quote = $this->createMock(Quote::class);
+        $quote = $this->getMockBuilder(Quote::class)->disableOriginalConstructor()->addMethods(['getCustomerId'])->getMock();
         $quote->method('getCustomerId')->willReturn(42);
 
         $this->validator->validateOwnership($quote, 42);
@@ -48,7 +48,7 @@ class CartOwnershipValidatorTest extends TestCase
 
     public function testCustomerCannotAccessOtherCustomerCart(): void
     {
-        $quote = $this->createMock(Quote::class);
+        $quote = $this->getMockBuilder(Quote::class)->disableOriginalConstructor()->addMethods(['getCustomerId'])->getMock();
         $quote->method('getCustomerId')->willReturn(42);
 
         $this->expectException(LocalizedException::class);
@@ -57,7 +57,7 @@ class CartOwnershipValidatorTest extends TestCase
 
     public function testCustomerCannotAccessGuestCart(): void
     {
-        $quote = $this->createMock(Quote::class);
+        $quote = $this->getMockBuilder(Quote::class)->disableOriginalConstructor()->addMethods(['getCustomerId'])->getMock();
         $quote->method('getCustomerId')->willReturn(null);
 
         $this->expectException(LocalizedException::class);

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tapbuy\RedirectTracking\Test\Unit\Model\Authorization;
 
 use Magento\Authorization\Model\UserContextInterface;
-use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\Request\Http;
 use Magento\Framework\AuthorizationInterface;
 use Magento\Framework\GraphQl\Exception\GraphQlAuthorizationException;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -16,13 +16,13 @@ use Tapbuy\RedirectTracking\Model\Authorization\TokenAuthorization;
 class TokenAuthorizationTest extends TestCase
 {
     private TokenAuthorization $tokenAuth;
-    private RequestInterface&MockObject $request;
+    private Http&MockObject $request;
     private UserContextInterface&MockObject $userContext;
     private AuthorizationInterface&MockObject $authorization;
 
     protected function setUp(): void
     {
-        $this->request = $this->createMock(RequestInterface::class);
+        $this->request = $this->createMock(Http::class);
         $this->userContext = $this->createMock(UserContextInterface::class);
         $this->authorization = $this->createMock(AuthorizationInterface::class);
 

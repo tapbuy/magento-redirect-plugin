@@ -50,7 +50,9 @@ class RedirectTest extends TestCase
         );
 
         $this->field = $this->createMock(Field::class);
-        $this->context = $this->createMock(ContextInterface::class);
+        $this->context = $this->getMockBuilder(ContextInterface::class)
+            ->addMethods(['getUserId'])
+            ->getMockForAbstractClass();
         $this->info = $this->createMock(ResolveInfo::class);
     }
 

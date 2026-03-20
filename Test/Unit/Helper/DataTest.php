@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tapbuy\RedirectTracking\Test\Unit\Helper;
 
 use Magento\Framework\App\Helper\Context;
-use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\Request\Http;
 use Magento\Framework\App\State;
 use Magento\Framework\HTTP\Header;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -25,7 +25,7 @@ class DataTest extends TestCase
     private PixelService&MockObject $pixelService;
     private State&MockObject $appState;
     private Header&MockObject $httpHeader;
-    private RequestInterface&MockObject $request;
+    private Http&MockObject $request;
 
     protected function setUp(): void
     {
@@ -36,7 +36,7 @@ class DataTest extends TestCase
         $this->pixelService = $this->createMock(PixelService::class);
         $this->appState = $this->createMock(State::class);
         $this->httpHeader = $this->createMock(Header::class);
-        $this->request = $this->createMock(RequestInterface::class);
+        $this->request = $this->createMock(Http::class);
 
         $this->helper = new Data(
             $context,
