@@ -244,6 +244,29 @@ In development mode, SSL verification is disabled for API requests to facilitate
 
 For support issues, please contact Tapbuy support or create an issue in the repository.
 
+## Development
+
+### Running Tests
+
+Tests run inside a Docker container that replicates the CI environment (PHP 8.3, Magento 2.4.7-p5). Docker must be running.
+
+**First-time setup:**
+
+```bash
+cp auth.json.dist auth.json
+# Fill in your repo.magento.com public/private keys in auth.json
+```
+
+**Run all unit tests:**
+
+```bash
+make test
+```
+
+On the first run, the Docker image is built and Magento is installed into a named volume (`tapbuy-magento-2.4.7-p5-php83`). Subsequent runs reuse the cached volume and are fast.
+
+> Do not use `composer test` — it runs PHPUnit without the Magento bootstrap and will fail or produce misleading results.
+
 ## License
 
 This module is licensed under the Open Software License v. 3.0 (OSL-3.0).
