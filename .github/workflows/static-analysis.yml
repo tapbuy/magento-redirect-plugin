@@ -30,7 +30,7 @@ jobs:
           coverage: none
 
       - name: Install PHPMD
-        run: composer global require phpmd/phpmd --no-interaction
+        run: composer global require phpmd/phpmd:2.15.0 --no-interaction
 
       - name: Run PHPMD
         run: phpmd . text phpmd.xml
@@ -54,7 +54,7 @@ jobs:
       - name: Install PHPCS + Magento2 standard
         run: |
           composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
-          composer global require squizlabs/php_codesniffer magento/magento-coding-standard --no-interaction
+          composer global require squizlabs/php_codesniffer:3.13.5 magento/magento-coding-standard:40 --no-interaction
 
       - name: Run PHPCS
         run: |
