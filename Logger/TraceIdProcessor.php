@@ -55,17 +55,27 @@ class TraceIdProcessor implements ProcessorInterface
 
         // If trace ID found, inject it into context
         if ($this->traceId !== false && $this->traceId !== null) {
-            if ($record instanceof LogRecord) {
-                // Monolog 3.x
-                $context = $record->context;
-                $context[TapbuyConstants::LOG_CONTEXT_TRACE_ID] = $this->traceId;
-                $record = $record->with(context: $context);
-            } else {
-                // Monolog 2.x
-                $record['context'][TapbuyConstants::LOG_CONTEXT_TRACE_ID] = $this->traceId;
-            }
+            $record = $this->withContext($record, [TapbuyConstants::LOG_CONTEXT_TRACE_ID => $this->traceId]);
         }
 
+        return $record;
+    }
+
+    /**
+     * Add or merge additional context into a Monolog 2.x (array) or 3.x (LogRecord) record.
+     *
+     * @param array|LogRecord $record
+     * @param array $additionalContext
+     * @return array|LogRecord
+     */
+    private function withContext(array|LogRecord $record, array $additionalContext): array|LogRecord
+    {
+        if ($record instanceof LogRecord) {
+            return $record->with(context: array_merge($record->context, $additionalContext));
+        }
+        foreach ($additionalContext as $key => $value) {
+            $record['context'][$key] = $value;
+        }
         return $record;
     }
 

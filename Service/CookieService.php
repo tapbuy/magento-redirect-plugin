@@ -96,9 +96,9 @@ class CookieService
     {
         if ($id !== null) {
             $this->setABTestIdCookie($id);
-        } else {
-            $this->removeABTestIdCookie();
+            return;
         }
+        $this->removeABTestIdCookie();
     }
 
     /**

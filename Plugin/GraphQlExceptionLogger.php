@@ -262,13 +262,9 @@ class GraphQlExceptionLogger
 
             $result = [];
 
-            if ($position === 'before') {
-                $startLine = max(0, $lineNumber - $numLines - 1);
-                $endLine = max(0, $lineNumber - 2);
-            } else {
-                $startLine = $lineNumber;
-                $endLine = min(count($lines) - 1, $lineNumber + $numLines - 1);
-            }
+            $lastIndex = count($lines) - 1;
+            $startLine = $position === 'before' ? max(0, $lineNumber - $numLines - 1) : $lineNumber;
+            $endLine = $position === 'before' ? max(0, $lineNumber - 2) : min($lastIndex, $lineNumber + $numLines - 1);
 
             for ($i = $startLine; $i <= $endLine; $i++) {
                 if (isset($lines[$i])) {

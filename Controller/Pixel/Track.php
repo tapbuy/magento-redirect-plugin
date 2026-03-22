@@ -52,41 +52,21 @@ class Track implements HttpGetActionInterface
         }
 
         try {
-            // Get pixel data from request — treat non-string values (e.g. ?data[]=...)
-            // as invalid rather than letting a TypeError surface from strict_types
-            $rawParam = $this->request->getParam('data');
-            $encodedData = is_string($rawParam) && $rawParam !== '' ? $rawParam : null;
+            $encodedData = $this->getValidEncodedData();
 
-            // Reject oversized payloads before any decode work
-            if ($encodedData && !$this->pixelInputValidator->isInputSizeValid($encodedData)) {
+            if ($encodedData !== null && !$this->pixelInputValidator->isInputSizeValid($encodedData)) {
                 $this->logger->warning('Pixel tracking: input exceeds maximum allowed size, request ignored');
                 return $this->createPixelResponse();
             }
 
-            $pixelData = $encodedData ? $this->pixelInputValidator->decodeAndSanitize($encodedData) : [];
+            $pixelData = $encodedData !== null ? $this->pixelInputValidator->decodeAndSanitize($encodedData) : [];
+            $cookies = $this->extractCookiesFromRequest();
 
-            // Collect cookies sent as query parameters (cookie_* format)
-            // Values are sanitized to prevent log injection before any further use
-            $cookies = [];
-            foreach ($this->request->getParams() as $key => $value) {
-                if (strpos($key, 'cookie_') === 0) {
-                    // Ignore non-scalar values (e.g. cookie_foo[]=x) to avoid
-                    // "Array to string conversion" notices and garbage log entries
-                    if (!is_scalar($value)) {
-                        continue;
-                    }
-                    $cookieName = substr($key, 7); // Remove 'cookie_' prefix
-                    $cookies[$cookieName] = $this->pixelInputValidator->sanitizeCookieValue((string) $value);
-                }
-            }
-
-            // Example: Use a specific cookie for AB test logic
             if (isset($cookies['tb-abtest-id'])) {
                 $this->helper->setABTestIdCookie($cookies['tb-abtest-id']);
             }
 
-            // Continue with existing pixel data logic
-            if ($pixelData && is_array($pixelData)) {
+            if (!empty($pixelData)) {
                 $this->processPixelData($pixelData);
             }
         } catch (\RuntimeException $e) {
@@ -97,6 +77,46 @@ class Track implements HttpGetActionInterface
 
         // Always return a 1x1 transparent GIF
         return $this->createPixelResponse();
+    }
+
+    /**
+     * Return the raw data query parameter if it is a non-empty string, null otherwise.
+     *
+     * Treats non-string values (e.g. ?data[]=...) as invalid to prevent TypeErrors
+     * from propagating through strict_types code.
+     *
+     * @return string|null
+     */
+    private function getValidEncodedData(): ?string
+    {
+        $rawParam = $this->request->getParam('data');
+        if (!is_string($rawParam) || $rawParam === '') {
+            return null;
+        }
+        return $rawParam;
+    }
+
+    /**
+     * Collect and sanitize cookies sent as cookie_* query parameters.
+     *
+     * Non-scalar values (e.g. cookie_foo[]=x) are silently dropped to avoid
+     * "Array to string conversion" notices and garbage log entries.
+     *
+     * @return array<string, string>
+     */
+    private function extractCookiesFromRequest(): array
+    {
+        $cookies = [];
+        foreach ($this->request->getParams() as $key => $value) {
+            if (strpos($key, 'cookie_') !== 0) {
+                continue;
+            }
+            if (!is_scalar($value)) {
+                continue;
+            }
+            $cookies[substr($key, 7)] = $this->pixelInputValidator->sanitizeCookieValue((string) $value);
+        }
+        return $cookies;
     }
 
     /**
