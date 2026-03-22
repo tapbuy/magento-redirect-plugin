@@ -65,51 +65,69 @@ class OrderSaveAfter implements ObserverInterface
             return;
         }
 
+        $order = null;
         try {
-            $order = $observer->getEvent()->getOrder();
-            if (!$order || !$order->getId()) {
-                $this->logger->warning('OrderSaveAfter: Observer triggered with no valid order');
+            $order = $this->resolveOrder($observer);
+            if ($order === null) {
                 return;
             }
-
-            // Only act on transitions to 'processing' or 'complete'
-            $currentState = $order->getState();
-            if (!in_array($currentState, self::TRACKED_STATES, true)) {
-                return;
-            }
-
-            // Only act when the state actually changed
-            $previousState = $order->getOrigData('state');
-            if ($previousState === $currentState) {
-                return;
-            }
-
-            // Prevent duplicate transmissions within a single request
-            $orderId = $order->getId();
-            if (isset(self::$processedOrderIds[$orderId])) {
-                $this->logger->debug('OrderSaveAfter: Order already processed in this request, skipping', [
-                    'order_id' => $orderId,
-                    'order_number' => $order->getIncrementId(),
-                ]);
-                return;
-            }
-            self::$processedOrderIds[$orderId] = true;
 
             $tracked = $this->abTest->processOrderTransaction($order);
-
             if ($tracked) {
                 $this->logger->info('OrderSaveAfter: Order transaction processed successfully', [
-                    'order_id' => $order->getId(),
+                    'order_id'     => $order->getId(),
                     'order_number' => $order->getIncrementId(),
-                    'state' => $currentState,
+                    'state'        => $order->getState(),
                 ]);
             }
         } catch (\Throwable $e) {
             // Tapbuy tracking only — must never disrupt the order flow
             $this->logger->logException('Error in Tapbuy order save processing', $e, [
-                'order_id' => $order instanceof Order ? $order->getId() : null,
+                'order_id'     => $order instanceof Order ? $order->getId() : null,
                 'order_number' => $order instanceof Order ? $order->getIncrementId() : null,
             ]);
         }
+    }
+
+    /**
+     * Validate the observer event and return the order only when all conditions are met.
+     *
+     * Returns null (skipping processing) when:
+     * - The event carries no valid order
+     * - The order state is not one of the tracked states
+     * - The order state has not actually changed
+     * - The order was already processed in this request (deduplication guard)
+     *
+     * @param Observer $observer
+     * @return Order|null
+     */
+    private function resolveOrder(Observer $observer): ?Order
+    {
+        $order = $observer->getEvent()->getOrder();
+        if (!$order || !$order->getId()) {
+            $this->logger->warning('OrderSaveAfter: Observer triggered with no valid order');
+            return null;
+        }
+
+        $currentState = $order->getState();
+        if (!in_array($currentState, self::TRACKED_STATES, true)) {
+            return null;
+        }
+
+        if ($order->getOrigData('state') === $currentState) {
+            return null;
+        }
+
+        $orderId = $order->getId();
+        if (isset(self::$processedOrderIds[$orderId])) {
+            $this->logger->debug('OrderSaveAfter: Order already processed in this request, skipping', [
+                'order_id'     => $orderId,
+                'order_number' => $order->getIncrementId(),
+            ]);
+            return null;
+        }
+
+        self::$processedOrderIds[$orderId] = true;
+        return $order;
     }
 }

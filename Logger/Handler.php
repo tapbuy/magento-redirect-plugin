@@ -105,78 +105,106 @@ class Handler extends StreamHandler implements LogHandlerInterface
      */
     protected function write(array|LogRecord $record): void
     {
-        // Normalize record for both Monolog 2.x (array) and 3.x (LogRecord)
-        $isLogRecord = $record instanceof LogRecord;
-        $context = $isLogRecord ? $record->context : ($record['context'] ?? []);
+        $context = $this->getContext($record);
 
-        // Handle enriched stacktrace with source code context (preferred)
+        // Promote exception stacktrace_with_context to the top-level context (preferred format)
         if (isset($context['exception']['stacktrace_with_context']) && !isset($context['stacktrace_with_context'])) {
-            if ($isLogRecord) {
-                $context = array_merge($context, [
-                    'stacktrace_with_context' => $context['exception']['stacktrace_with_context']
-                ]);
-                $record = $record->with(context: $context);
-            } else {
-                $record['context']['stacktrace_with_context'] = $context['exception']['stacktrace_with_context'];
-            }
+            $record = $this->withContext($record, [
+                'stacktrace_with_context' => $context['exception']['stacktrace_with_context'],
+            ]);
         }
 
-        // Add stacktrace if not already present and we're logging an error
+        // No stacktrace at all — capture a backtrace for errors and above as a fallback
         if (!isset($context['stacktrace']) && !isset($context['exception']['stacktrace'])) {
-            $level = $isLogRecord ? $record->level->value : $record['level'];
-
-            // For errors and above, capture current stacktrace only as fallback
-            if ($level >= Logger::ERROR) {
-                $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15);
-                // Remove logger internal calls
-                $backtrace = array_slice($backtrace, 4);
-                $stacktrace = $this->formatStacktrace($backtrace);
-
-                if ($isLogRecord) {
-                    $record = $record->with(context: array_merge($context, ['stacktrace' => $stacktrace]));
-                } else {
-                    $record['context']['stacktrace'] = $stacktrace;
-                }
-            }
-        } elseif (isset($context['exception']['stacktrace']) && !isset($context['stacktrace'])) {
-            // Use exception stacktrace if available (preferred over debug_backtrace)
-            if ($isLogRecord) {
-                $record = $record->with(context: array_merge($context, [
-                    'stacktrace' => $context['exception']['stacktrace']
-                ]));
-            } else {
-                $record['context']['stacktrace'] = $context['exception']['stacktrace'];
-            }
+            $record = $this->addStacktraceFromBacktrace($record);
         }
 
-        // Anonymize after all context enrichment so the final written payload is fully scrubbed.
+        // Promote exception stacktrace to top-level context (both conditions are mutually exclusive)
+        if (isset($context['exception']['stacktrace']) && !isset($context['stacktrace'])) {
+            $record = $this->withContext($record, ['stacktrace' => $context['exception']['stacktrace']]);
+        }
+
         $record = $this->anonymizeRecord($record);
 
-        // Format the record using the formatter (JsonFormatter)
-        $formatted = '';
-        if ($this->getFormatter()) {
-            $formatted = $this->getFormatter()->format($record);
-        } else {
-            // Fallback: manually format as JSON if no formatter is set
-            $recordArray = $record instanceof LogRecord ? [
-                'timestamp' => $record->datetime->format('Y-m-d H:i:s'),
-                'level' => $record->level->name,
-                'message' => $record->message,
-                'context' => $record->context,
-            ] : $record;
-            $formatted = json_encode($recordArray) . "\n";
-        }
-
-        // Write directly to file
+        $formatted = $this->formatRecord($record);
         if ($formatted && !empty($this->filePath)) {
             $this->filesystem->filePutContents($this->filePath, $formatted, FILE_APPEND | LOCK_EX);
         }
     }
 
     /**
-     * Anonymize the full log record (message, context, extra) using the configured scrubbing keys.
-     * Returns the record unchanged when anonymization is disabled or unavailable (fail open).
+     * Extract the context array from a Monolog 2.x (array) or 3.x (LogRecord) record.
      *
+     * @param array|LogRecord $record
+     * @return array
+     */
+    private function getContext(array|LogRecord $record): array
+    {
+        return $record instanceof LogRecord ? $record->context : ($record['context'] ?? []);
+    }
+
+    /**
+     * Add or merge additional context into a Monolog 2.x (array) or 3.x (LogRecord) record.
+     *
+     * @param array|LogRecord $record
+     * @param array $additionalContext
+     * @return array|LogRecord
+     */
+    private function withContext(array|LogRecord $record, array $additionalContext): array|LogRecord
+    {
+        if ($record instanceof LogRecord) {
+            return $record->with(context: array_merge($record->context, $additionalContext));
+        }
+        foreach ($additionalContext as $key => $value) {
+            $record['context'][$key] = $value;
+        }
+        return $record;
+    }
+
+    /**
+     * Capture a debug_backtrace stacktrace and inject it into the record context.
+     *
+     * Only runs for ERROR-level and above; returns the record unchanged otherwise.
+     *
+     * @param array|LogRecord $record
+     * @return array|LogRecord
+     */
+    private function addStacktraceFromBacktrace(array|LogRecord $record): array|LogRecord
+    {
+        $level = $record instanceof LogRecord ? $record->level->value : ($record['level'] ?? 0);
+        if ($level < Logger::ERROR) {
+            return $record;
+        }
+        // Remove logger-internal frames
+        $backtrace = array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15), 4);
+        return $this->withContext($record, ['stacktrace' => $this->formatStacktrace($backtrace)]);
+    }
+
+    /**
+     * Serialize a log record using the configured formatter, with a JSON fallback.
+     *
+     * @param array|LogRecord $record
+     * @return string
+     */
+    private function formatRecord(array|LogRecord $record): string
+    {
+        $formatter = $this->getFormatter();
+        if ($formatter !== null) {
+            return (string) $formatter->format($record);
+        }
+        $recordArray = $record instanceof LogRecord ? [
+            'timestamp' => $record->datetime->format('Y-m-d H:i:s'),
+            'level'     => $record->level->name,
+            'message'   => $record->message,
+            'context'   => $record->context,
+        ] : $record;
+        return json_encode($recordArray) . "\n";
+    }
+
+    /**
+     * Anonymize the full log record (message, context, extra) using the configured scrubbing keys.
+     *
+     * Returns the record unchanged when anonymization is disabled or unavailable (fail open).
      * Compatible with both Monolog 2.x (array) and Monolog 3.x (LogRecord).
      *
      * @param array|LogRecord $record

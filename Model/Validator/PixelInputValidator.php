@@ -144,31 +144,59 @@ class PixelInputValidator
      */
     private function coerceValue($value, string $expectedType)
     {
-        switch ($expectedType) {
-            case 'string':
-                if (!is_scalar($value)) {
-                    return null;
-                }
-                return $this->sanitizeString((string) $value);
+        return match ($expectedType) {
+            'string'  => $this->coerceToString($value),
+            'integer' => $this->coerceToInteger($value),
+            'boolean' => $this->coerceToBoolean($value),
+            default   => null,
+        };
+    }
 
-            case 'integer':
-                if (!is_int($value) && !is_string($value)) {
-                    return null;
-                }
-                if (is_string($value) && !ctype_digit($value)) {
-                    return null;
-                }
-                return (int) $value;
-
-            case 'boolean':
-                if (!is_bool($value) && !in_array($value, [0, 1, '0', '1'], true)) {
-                    return null;
-                }
-                return (bool) $value;
-
-            default:
-                return null;
+    /**
+     * Coerce a value to a sanitized string, returning null for non-scalar inputs.
+     *
+     * @param mixed $value
+     * @return string|null
+     */
+    private function coerceToString($value): ?string
+    {
+        if (!is_scalar($value)) {
+            return null;
         }
+        return $this->sanitizeString((string) $value);
+    }
+
+    /**
+     * Coerce a value to an integer, returning null for non-numeric or non-digit strings.
+     *
+     * @param mixed $value
+     * @return int|null
+     */
+    private function coerceToInteger($value): ?int
+    {
+        if (!is_int($value) && !is_string($value)) {
+            return null;
+        }
+        if (is_string($value) && !ctype_digit($value)) {
+            return null;
+        }
+        return (int) $value;
+    }
+
+    /**
+     * Coerce a value to a boolean, returning null for values outside the accepted set.
+     *
+     * Accepted: true, false, 0, 1, '0', '1'.
+     *
+     * @param mixed $value
+     * @return bool|null
+     */
+    private function coerceToBoolean($value): ?bool
+    {
+        if (!is_bool($value) && !in_array($value, [0, 1, '0', '1'], true)) {
+            return null;
+        }
+        return (bool) $value;
     }
 
     /**

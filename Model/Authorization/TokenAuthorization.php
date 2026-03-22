@@ -184,7 +184,21 @@ class TokenAuthorization implements TokenAuthorizationInterface
             return true;
         }
 
-        // Check for parent resources that grant access to the required resource
+        if ($this->isGrantedByParentResource($requiredResource)) {
+            return true;
+        }
+
+        return $this->isGrantedByLegacyResource($requiredResource);
+    }
+
+    /**
+     * Check whether a parent resource grants access to the required resource.
+     *
+     * @param string $requiredResource
+     * @return bool
+     */
+    private function isGrantedByParentResource(string $requiredResource): bool
+    {
         foreach (self::PARENT_RESOURCES as $parentResource => $childResources) {
             if ($this->authorization->isAllowed($parentResource)
                 && in_array($requiredResource, $childResources)
@@ -192,15 +206,21 @@ class TokenAuthorization implements TokenAuthorizationInterface
                 return true;
             }
         }
-
-        // Backward compatibility: Check for legacy Magento resources
-        if (isset(self::LEGACY_RESOURCE_MAPPING[$requiredResource])) {
-            if ($this->authorization->isAllowed(self::LEGACY_RESOURCE_MAPPING[$requiredResource])) {
-                return true;
-            }
-        }
-
         return false;
+    }
+
+    /**
+     * Check whether a legacy Magento resource mapping grants access to the required resource.
+     *
+     * @param string $requiredResource
+     * @return bool
+     */
+    private function isGrantedByLegacyResource(string $requiredResource): bool
+    {
+        if (!isset(self::LEGACY_RESOURCE_MAPPING[$requiredResource])) {
+            return false;
+        }
+        return $this->authorization->isAllowed(self::LEGACY_RESOURCE_MAPPING[$requiredResource]);
     }
 
     /**

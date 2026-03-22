@@ -65,6 +65,14 @@ class ABTest implements ABTestInterface
             $result = $this->service->sendTransactionForOrder($order, $abTestId);
 
             // Mark the order as tracked to prevent duplicate transmissions only on success
+            if (!$result) {
+                $this->logger->warning('ABTest: Order transaction returned no result', [
+                    'order_id' => $order->getId(),
+                    'order_number' => $order->getIncrementId(),
+                    'ab_test_id' => $abTestId,
+                ]);
+            }
+
             if ($result) {
                 $order->setData(TapbuyConstants::ABTEST_TRACKING_FLAG, true);
                 $this->logger->debug('ABTest: Order transaction sent successfully', [
@@ -72,12 +80,6 @@ class ABTest implements ABTestInterface
                     'order_number' => $order->getIncrementId(),
                     'ab_test_id' => $abTestId,
                     'result_id' => $result['id'] ?? null,
-                ]);
-            } else {
-                $this->logger->warning('ABTest: Order transaction returned no result', [
-                    'order_id' => $order->getId(),
-                    'order_number' => $order->getIncrementId(),
-                    'ab_test_id' => $abTestId,
                 ]);
             }
 
