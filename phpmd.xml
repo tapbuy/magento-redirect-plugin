@@ -7,6 +7,9 @@
 
     <description>PHPMD ruleset for Tapbuy RedirectTracking module</description>
 
+    <!-- Exclude test directory from analysis -->
+    <exclude-pattern>*/Test/*</exclude-pattern>
+
     <!--
         Clean code: suppress BooleanArgumentFlag.
         setCookie/removeCookie use bool flags intentionally — they mirror PHP's
