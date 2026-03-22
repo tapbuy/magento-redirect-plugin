@@ -33,7 +33,7 @@ run_phpcs() {
         -v "${SCRIPT_DIR}:/module:ro" \
         "$IMAGE" \
         bash -c "cd /module && phpcs -s --extensions=php ." \
-        | grep -v -E "^DEPRECATED|sniff is listening for"
+        | { grep -v -E "^DEPRECATED|sniff is listening for" || true; }
 }
 
 case "$TOOL" in

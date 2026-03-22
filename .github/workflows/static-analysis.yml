@@ -33,7 +33,7 @@ jobs:
         run: composer global require phpmd/phpmd --no-interaction
 
       - name: Run PHPMD
-        run: phpmd . text cleancode,codesize,controversial,design,naming,unusedcode --exclude Test
+        run: phpmd . text phpmd.xml
 
   phpcs:
     name: PHPCS (Magento2)
@@ -58,5 +58,5 @@ jobs:
 
       - name: Run PHPCS
         run: |
-          set -o pipefail
-          phpcs -s --extensions=php . | grep -v -E "^DEPRECATED|sniff is listening for"
+          phpcs -s --extensions=php . | { grep -v -E "^DEPRECATED|sniff is listening for" || true; }
+          exit ${PIPESTATUS[0]}
