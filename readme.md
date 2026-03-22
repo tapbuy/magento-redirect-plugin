@@ -267,6 +267,25 @@ On the first run, the Docker image is built and Magento is installed into a name
 
 > Do not use `composer test` — it runs PHPUnit without the Magento bootstrap and will fail or produce misleading results.
 
+### Linting
+
+Linting runs PHPMD and PHPCS (Magento2 standard) inside the same Docker container as tests. Docker must be running.
+
+**Run both linters:**
+
+```bash
+make lint
+```
+
+**Run individually:**
+
+```bash
+make phpmd   # PHP Mess Detector
+make phpcs   # PHP CodeSniffer (Magento2 standard)
+```
+
+Both linters always run when using `make lint`; if either fails, the command exits with a non-zero code.
+
 ## License
 
 This module is licensed under the Open Software License v. 3.0 (OSL-3.0).
