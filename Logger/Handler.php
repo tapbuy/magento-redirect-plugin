@@ -175,8 +175,8 @@ class Handler extends StreamHandler implements LogHandlerInterface
 
     /**
      * Anonymize the full log record (message, context, extra) using the configured scrubbing keys.
-     * Returns the record unchanged when anonymization is disabled or unavailable (fail open).
      *
+     * Returns the record unchanged when anonymization is disabled or unavailable (fail open).
      * Compatible with both Monolog 2.x (array) and Monolog 3.x (LogRecord).
      *
      * @param array|LogRecord $record
