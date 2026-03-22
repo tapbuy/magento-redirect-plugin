@@ -16,7 +16,6 @@ jobs:
   phpmd:
     name: PHPMD
     runs-on: ubuntu-latest
-    continue-on-error: true
 
     steps:
       - name: Checkout module
@@ -38,7 +37,6 @@ jobs:
   phpcs:
     name: PHPCS (Magento2)
     runs-on: ubuntu-latest
-    continue-on-error: true
 
     steps:
       - name: Checkout module
